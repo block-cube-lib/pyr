@@ -1,0 +1,6 @@
+[package]
+name = "pyrite"
+version = "0.1.0"
+authors = ["block <block@tortoise-games.com>"]
+
+[dependencies]
