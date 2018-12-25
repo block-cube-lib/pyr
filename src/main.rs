@@ -1,4 +1,1 @@
-extern crate pyrite;
-
-fn main() {
-}
+fn main() {}
