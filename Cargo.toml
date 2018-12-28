@@ -2,5 +2,9 @@
 name = "pyrite"
 version = "0.1.0"
 authors = ["block <block@tortoise-games.com>"]
+edition = "2018"
 
 [dependencies]
+
+[dev-dependencies]
+proptest = "0.8.7"
