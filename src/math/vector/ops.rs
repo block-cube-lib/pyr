@@ -203,6 +203,9 @@ macro_rules! ops_test {
     ($type: tt; $($field: tt),*) => {
         ops_test_helper!($type, $($field),*; add, +, f32);
         ops_test_helper!($type, $($field),*; sub, -, f32);
+        ops_test_helper!($type, $($field),*; mul, *, f32);
+        ops_test_helper!($type, $($field),*; div, /, f32);
+
         //#[test]
         //fn index() {
         //    let v = Vector1 { x: 100.0 };
@@ -232,7 +235,7 @@ macro_rules! ops_test_helper {
                 };
                 let v3 = v1 $op v2;
                 $(
-                    assert_eq!(v3.$field, $field $op $field * 2.0);
+                    assert_eq!(v3.$field, $field $op ($field * 2.0));
                 )*
             }
         }
