@@ -205,6 +205,12 @@ macro_rules! ops_test {
         ops_test_helper!($type, $($field),*; sub, -, f32);
         ops_test_helper!($type, $($field),*; mul, *, f32);
         ops_test_helper!($type, $($field),*; div, /, f32);
+        ops_test_helper!($type, $($field),*; add_assign, +, +=, f32);
+        ops_test_helper!($type, $($field),*; sub_assign, -, -=, f32);
+        ops_test_helper!($type, $($field),*; mul_assign, *, *=, f32);
+        ops_test_helper!($type, $($field),*; div_assign, /, /=, f32);
+        ops_test_helper!(vector_op_scalar =>, $type, $($field),*; mul_scalar, *, f32);
+        ops_test_helper!(vector_op_scalar =>, $type, $($field),*; div_scalar, /, f32);
 
         //#[test]
         //fn index() {
@@ -236,6 +242,51 @@ macro_rules! ops_test_helper {
                 let v3 = v1 $op v2;
                 $(
                     assert_eq!(v3.$field, $field $op ($field * 2.0));
+                )*
+            }
+        }
+    };
+    ($type: tt, $($field: tt),*; $test_name: ident, $op: tt, $assign_op: tt, $element_type: ty) => {
+        proptest! {
+            #[test]
+            fn $test_name( $($field in -100.0..100.0),* ) {
+                $(
+                    let $field = $field as $element_type;
+                )*
+                let mut v1 = $type {
+                    $(
+                        $field: $field
+                    ),*
+                };
+                let v2 = $type {
+                    $(
+                        $field: $field * 2.0
+                    ),*
+                };
+
+                let v3 = v1 $op v2;
+                v1 $assign_op v2;
+                assert_eq!(v1, v3);
+            }
+        }
+    };
+    (vector_op_scalar =>, $type: tt, $($field: tt),*; $test_name: ident, $op: tt, $element_type: ty) => {
+        proptest! {
+            #[test]
+            fn $test_name( $($field in -100.0..100.0),* ,scalar in -100.0..100.0) {
+                let scalar = scalar as $element_type;
+                $(
+                    let $field = $field as $element_type;
+                )*
+                let mut v = $type {
+                    $(
+                        $field: $field
+                    ),*
+                };
+
+                v = v $op scalar;
+                $(
+                    assert_eq!(v.$field, $field $op scalar);
                 )*
             }
         }
