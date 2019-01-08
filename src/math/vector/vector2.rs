@@ -1,61 +1,62 @@
-use std;
 use std::ops;
+#[cfg(feature = "serde")]
+use Serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[repr(C)]
-pub struct Vector2 {
-    pub x: f32,
-    pub y: f32,
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct Vector2<T> {
+    pub x: T,
+    pub y: T,
 }
-include!("vector_ops.rs");
-vector_operators!(Vector2; x, 0; y, 1);
-include!("vector_functions.rs");
-vector_functions!(Vector2; x, 0; y, 1);
 
-// static
-impl Vector2 {
-    pub fn unit_x() -> Self {
-        Self::new(1.0, 0.0)
-    }
+macro_rules! impl_vector2 {
+    () => {
+        impl_vector2!(f32);
+        impl_vector2!(f64);
+        impl_vector2!(i8);
+        impl_vector2!(i16);
+        impl_vector2!(i32);
+        impl_vector2!(i64);
+        impl_vector2!(i128);
+        impl_vector2!(isize);
+        impl_vector2!(u8);
+        impl_vector2!(u16);
+        impl_vector2!(u32);
+        impl_vector2!(u64);
+        impl_vector2!(u128);
+        impl_vector2!(usize);
+    };
 
-    pub fn unit_y() -> Self {
-        Self::new(0.0, 1.0)
-    }
-
-    pub fn yx(&self) -> Self {
-        Vector2::new(self.y, self.x)
-    }
-    pub fn cross(&self, other: Vector2) -> f32 {
-        self.x * other.y - self.y * other.x
-    }
+    ($element_type: ty) => {
+        impl Vector2<$element_type> {
+            pub const ZERO: Vector2<$element_type> = Vector2 {
+                x: 0 as $element_type,
+                y: 0 as $element_type,
+            };
+            pub const ONE: Vector2<$element_type> = Vector2 {
+                x: 1 as $element_type,
+                y: 1 as $element_type,
+            };
+            pub const UNIT_X: Vector2<$element_type> = Vector2 {
+                x: 1 as $element_type,
+                y: 0 as $element_type,
+            };
+            pub const UNIT_Y: Vector2<$element_type> = Vector2 {
+                x: 0 as $element_type,
+                y: 1 as $element_type,
+            };
+        }
+    };
 }
+
+impl_vector2!();
+
+impl_ops!(Vector2; x, y);
 
 #[cfg(test)]
 mod test {
-    use super::Vector2;
-    vector_operators_test!(Vector2; x, 0; y, 1);
-    vector_functions_test!(Vector2; x, 0; y, 1);
-
-    #[test]
-    fn unit_x() {
-        assert_eq!(Vector2::unit_x(), Vector2::new(1.0, 0.0));
-    }
-
-    #[test]
-    fn unit_y() {
-        assert_eq!(Vector2::unit_y(), Vector2::new(0.0, 1.0));
-    }
-
-    #[test]
-    fn yx() {
-        let v = Vector2::new(12.3, 4.5);
-        assert_eq!(v.yx(), Vector2::new(v.y, v.x));
-    }
-
-    #[test]
-    fn cross() {
-        let a = Vector2::new(2.0, 3.0);
-        let b = Vector2::new(4.0, 5.0);
-        assert_eq!(a.cross(b), -2.0);
-    }
+    use super::*;
+    use proptest::*;
+    ops_test!(Vector2; x, y);
 }
