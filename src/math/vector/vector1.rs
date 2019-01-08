@@ -44,13 +44,13 @@ macro_rules! impl_vector1 {
 
 impl_vector1!();
 
-impl_ops!(Vector1, x);
+impl_ops!(Vector1; x);
 
 #[cfg(test)]
 mod test {
     use super::*;
     use proptest::*;
-    ops_test!(Vector1, x);
+    ops_test!(Vector1; x);
     //#[test]
     //#[should_panic]
     //fn index_out_of_range(i in index_max!(x)..100_usize) {

@@ -7,7 +7,7 @@
 ///
 #[macro_export]
 macro_rules! impl_ops {
-    ($type: tt, $($field: tt);*) => {
+    ($type: tt; $($field: tt),*) => {
         impl_ops_helper!($type, $( $field ),*; Add, add, +);
         impl_ops_helper!($type, $( $field ),*; Sub, sub, -);
         impl_ops_helper!($type, $( $field ),*; Mul, mul, *);
@@ -37,7 +37,7 @@ macro_rules! impl_ops {
         impl_ops_mul_scalar!($type, $( $field ),*; u128);
         impl_ops_mul_scalar!($type, $( $field ),*; usize);
 
-        impl_index_ops!($type, $( $field ),*);
+        impl_index_ops!($type; $( $field ),*);
 
         impl<T> ops::Neg for $type<T>
         where T: ops::Neg {
@@ -95,7 +95,7 @@ macro_rules! impl_ops_scalar {
     ($type: tt, $($field:tt),*; $trait: tt, $func: ident, $op: tt) => {
         impl<T> ops::$trait<T> for $type<T>
         where
-            T: ops::$trait<T, Output = T>,
+            T: ops::$trait<T, Output = T> + Copy,
         {
             type Output = $type<T>;
 
@@ -145,7 +145,7 @@ macro_rules! impl_ops_mul_scalar {
 
 // Index, IndexMut
 macro_rules! impl_index_ops {
-    ($type: tt, $($field: tt);*) => {
+    ($type: tt; $($field: tt),*) => {
         impl<T> ops::Index<usize> for $type<T> {
             type Output = T;
 
@@ -200,7 +200,7 @@ macro_rules! index_max {
 #[cfg(test)]
 #[macro_export]
 macro_rules! ops_test {
-    ($type: tt, $($field: tt),*) => {
+    ($type: tt; $($field: tt),*) => {
         ops_test_helper!($type, $($field),*; add, +, f32);
         ops_test_helper!($type, $($field),*; sub, -, f32);
         //#[test]
@@ -211,7 +211,6 @@ macro_rules! ops_test {
     };
 }
 
-#[feature(concat_idents)]
 #[cfg(test)]
 macro_rules! ops_test_helper {
     ($type: tt, $($field: tt),*; $test_name: ident, $op: tt, $element_type: ty) => {
