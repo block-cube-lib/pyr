@@ -1,5 +1,5 @@
 use super::prelude::*;
-use super::vector::*;
+use super::{Vector, VectorElement};
 use num::{pow, One, Zero};
 //#[cfg(feature = "serde")]
 //use Serde::{Deserialize, Serialize};

@@ -1,4 +1,4 @@
-use super::vector::Vector;
+use super::Vector;
 use num::{Float, Zero};
 use std::ops::{self, Index, IndexMut};
 

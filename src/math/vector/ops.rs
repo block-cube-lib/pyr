@@ -8,8 +8,6 @@
 #[macro_export]
 macro_rules! impl_ops {
     ($type_name: tt; $( $element: tt ),+) => {
-        use crate::math::vector::vector::VectorElement;
-
         impl_ops_helper!($type_name; $($element),+; Add, add, +);
         impl_ops_helper!($type_name; $($element),+; Sub, sub, -);
         impl_ops_helper!($type_name; $($element),+; Mul, mul, *);
@@ -19,7 +17,7 @@ macro_rules! impl_ops {
         impl_ops_helper!($type_name; $($element),+; assign, MulAssign, mul_assign, *);
         impl_ops_helper!($type_name; $($element),+; assign, DivAssign, div_assign, /);
 
-        impl<T: VectorElement> std::ops::Mul<T> for $type_name<T> {
+        impl<T: super::VectorElement> std::ops::Mul<T> for $type_name<T> {
             type Output = $type_name<T>;
 
             fn mul(self, rhs: T) -> Self::Output {
@@ -30,7 +28,7 @@ macro_rules! impl_ops {
                 }
             }
         }
-        impl<T: VectorElement> std::ops::Div<T> for $type_name<T> {
+        impl<T: super::VectorElement> std::ops::Div<T> for $type_name<T> {
             type Output = $type_name<T>;
 
             fn div(self, rhs: T) -> Self::Output {
@@ -42,12 +40,12 @@ macro_rules! impl_ops {
             }
         }
 
-        impl<T: VectorElement> std::ops::MulAssign<T> for $type_name<T> {
+        impl<T: super::VectorElement> std::ops::MulAssign<T> for $type_name<T> {
             fn mul_assign(&mut self, rhs: T) {
                 *self = *self * rhs;
             }
         }
-        impl<T: VectorElement> std::ops::DivAssign<T> for $type_name<T> {
+        impl<T: super::VectorElement> std::ops::DivAssign<T> for $type_name<T> {
             fn div_assign(&mut self, rhs: T) {
                 *self = *self / rhs;
             }
@@ -56,7 +54,7 @@ macro_rules! impl_ops {
         impl_mul_scaler_vector!($type_name; i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 isize usize);
         impl_index!($type_name; $($element),+);
 
-        impl<T: VectorElement> std::ops::Neg for $type_name<T>
+        impl<T: super::VectorElement> std::ops::Neg for $type_name<T>
         where T: std::ops::Neg<Output = T> {
             type Output = $type_name<T>;
 
@@ -72,7 +70,7 @@ macro_rules! impl_ops {
 }
 macro_rules! impl_ops_helper {
     ($type_name: tt; $($element: tt),+; $trait_name: tt, $func_name: tt, $op: tt) => {
-        impl<T: VectorElement> std::ops::$trait_name for $type_name<T> {
+        impl<T: super::VectorElement> std::ops::$trait_name for $type_name<T> {
             type Output = Self;
 
             fn $func_name(self, rhs: Self) -> Self::Output {
@@ -85,7 +83,7 @@ macro_rules! impl_ops_helper {
         }
     };
     ($type_name: tt; $($element: tt),+; assign, $trait_name: tt, $func_name: tt, $op: tt) => {
-        impl<T: VectorElement> std::ops::$trait_name for $type_name<T> {
+        impl<T: super::VectorElement> std::ops::$trait_name for $type_name<T> {
             fn $func_name(&mut self, rhs: $type_name<T>) {
                 *self = *self $op rhs;
             }
@@ -136,10 +134,10 @@ macro_rules! impl_index {
         impl_index!($vector_type_name; $($element),+; usize);
     };
     ($vector_type_name: tt; $($element: tt),+; $index_type: ty) => {
-        impl<T: VectorElement> std::ops::Index<$index_type> for $vector_type_name<T> {
+        impl<T: super::VectorElement> std::ops::Index<$index_type> for $vector_type_name<T> {
             type Output = T;
 
-            fn index<'a>(&'a self, index: $index_type) -> &'a T {
+            fn index(&'_ self, index: $index_type) -> &'_ T {
                 match index {
                     $(
                         index_match!($element) => &self.$element,
@@ -149,8 +147,8 @@ macro_rules! impl_index {
             }
         }
 
-        impl<T: VectorElement> std::ops::IndexMut<$index_type> for $vector_type_name<T> {
-            fn index_mut<'a>(&'a mut self, index: $index_type) -> &'a mut T {
+        impl<T: super::VectorElement> std::ops::IndexMut<$index_type> for $vector_type_name<T> {
+            fn index_mut(&'_ mut self, index: $index_type) -> &'_ mut T {
                 match index {
                     $(
                         index_match!($element) => &mut self.$element,
