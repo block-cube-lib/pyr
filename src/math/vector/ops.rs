@@ -7,172 +7,108 @@
 ///
 #[macro_export]
 macro_rules! impl_ops {
-    ($type: tt; $($field: tt),*) => {
-        impl_ops_helper!($type, $( $field ),*; Add, add, +);
-        impl_ops_helper!($type, $( $field ),*; Sub, sub, -);
-        impl_ops_helper!($type, $( $field ),*; Mul, mul, *);
-        impl_ops_helper!($type, $( $field ),*; Div, div, /);
-        impl_ops_helper!($type, $( $field ),*; AddAssign, Add, add_assign, +);
-        impl_ops_helper!($type, $( $field ),*; SubAssign, Sub, sub_assign, -);
-        impl_ops_helper!($type, $( $field ),*; MulAssign, Mul, mul_assign, *);
-        impl_ops_helper!($type, $( $field ),*; DivAssign, Div, div_assign, /);
+    ($type_name: tt; $( $element: tt ),+) => {
+        use crate::math::vector::vector::VectorElement;
 
-        impl_ops_scalar!($type, $( $field ),*; Mul, mul, *);
-        impl_ops_scalar!($type, $( $field ),*; Div, div, /);
-        impl_ops_scalar!($type, $( $field ),*; MulAssign, Mul, mul_assign, *);
-        impl_ops_scalar!($type, $( $field ),*; DivAssign, Div, div_assign, /);
+        impl_ops_helper!($type_name; $($element),+; Add, add, +);
+        impl_ops_helper!($type_name; $($element),+; Sub, sub, -);
+        impl_ops_helper!($type_name; $($element),+; Mul, mul, *);
+        impl_ops_helper!($type_name; $($element),+; Div, div, /);
+        impl_ops_helper!($type_name; $($element),+; assign, AddAssign, add_assign, +);
+        impl_ops_helper!($type_name; $($element),+; assign, SubAssign, sub_assign, -);
+        impl_ops_helper!($type_name; $($element),+; assign, MulAssign, mul_assign, *);
+        impl_ops_helper!($type_name; $($element),+; assign, DivAssign, div_assign, /);
 
-        impl_ops_mul_scalar!($type, $( $field ),*; f32);
-        impl_ops_mul_scalar!($type, $( $field ),*; f64);
-        impl_ops_mul_scalar!($type, $( $field ),*; i8);
-        impl_ops_mul_scalar!($type, $( $field ),*; i16);
-        impl_ops_mul_scalar!($type, $( $field ),*; i32);
-        impl_ops_mul_scalar!($type, $( $field ),*; i64);
-        impl_ops_mul_scalar!($type, $( $field ),*; i128);
-        impl_ops_mul_scalar!($type, $( $field ),*; isize);
-        impl_ops_mul_scalar!($type, $( $field ),*; u8);
-        impl_ops_mul_scalar!($type, $( $field ),*; u16);
-        impl_ops_mul_scalar!($type, $( $field ),*; u32);
-        impl_ops_mul_scalar!($type, $( $field ),*; u64);
-        impl_ops_mul_scalar!($type, $( $field ),*; u128);
-        impl_ops_mul_scalar!($type, $( $field ),*; usize);
+        impl<T: VectorElement> std::ops::Mul<T> for $type_name<T> {
+            type Output = $type_name<T>;
 
-        impl_index_ops!($type; $( $field ),*);
+            fn mul(self, rhs: T) -> Self::Output {
+                $type_name::<T> {
+                    $(
+                        $element: self.$element * rhs,
+                    )+
+                }
+            }
+        }
+        impl<T: VectorElement> std::ops::Div<T> for $type_name<T> {
+            type Output = $type_name<T>;
 
-        impl<T> ops::Neg for $type<T>
-        where T: ops::Neg {
-            type Output = $type<T>;
+            fn div(self, rhs: T) -> Self::Output {
+                $type_name::<T> {
+                    $(
+                        $element: self.$element / rhs,
+                    )+
+                }
+            }
+        }
+
+        impl<T: VectorElement> std::ops::MulAssign<T> for $type_name<T> {
+            fn mul_assign(&mut self, rhs: T) {
+                *self = *self * rhs;
+            }
+        }
+        impl<T: VectorElement> std::ops::DivAssign<T> for $type_name<T> {
+            fn div_assign(&mut self, rhs: T) {
+                *self = *self / rhs;
+            }
+        }
+
+        impl_mul_scaler_vector!($type_name; i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 isize usize);
+        impl_index!($type_name; $($element),+);
+
+        impl<T: VectorElement> std::ops::Neg for $type_name<T>
+        where T: std::ops::Neg<Output = T> {
+            type Output = $type_name<T>;
 
             fn neg(self) -> Self::Output {
-                $type {
+                $type_name {
                     $(
-                        $field: self.$field,
+                        $element: -self.$element,
                     )*
                 }
             }
         }
-    }
+    };
 }
-
 macro_rules! impl_ops_helper {
-    // +, -, *, /
-    ($type: tt, $($field:tt),*; $trait: tt, $func: ident, $op: tt) => {
-        impl<T> ops::$trait for $type<T>
-        where
-            T: ops::$trait<T, Output = T>,
-        {
-            type Output = $type<T>;
+    ($type_name: tt; $($element: tt),+; $trait_name: tt, $func_name: tt, $op: tt) => {
+        impl<T: VectorElement> std::ops::$trait_name for $type_name<T> {
+            type Output = Self;
 
-            fn $func(self, rhs: $type<T>) -> $type<T> {
-                $type {
+            fn $func_name(self, rhs: Self) -> Self::Output {
+                $type_name::<T> {
                     $(
-                        $field: self.$field $op rhs.$field
-                    ),*
+                        $element: self.$element $op rhs.$element,
+                    )+
                 }
             }
         }
     };
-
-    // +=, -=, *=, /=
-    ($type: tt, $($field:tt),*; $trait: tt, $operator_trait: tt, $func: ident, $op: tt) => {
-        impl<T> ops::$trait for $type<T>
-        where
-            T: ops::$operator_trait<T, Output = T> + Copy,
-        {
-            fn $func(&mut self, rhs: $type<T>) {
-                *self = $type {
-                            $(
-                                $field: self.$field $op rhs.$field
-                            ),*
-                        };
-            }
-        }
-    }
-}
-
-macro_rules! impl_ops_scalar {
-    // T: *, /
-    ($type: tt, $($field:tt),*; $trait: tt, $func: ident, $op: tt) => {
-        impl<T> ops::$trait<T> for $type<T>
-        where
-            T: ops::$trait<T, Output = T> + Copy,
-        {
-            type Output = $type<T>;
-
-            fn $func(self, rhs: T) -> $type<T> {
-                $type {
-                    $(
-                        $field: self.$field $op rhs
-                    ),*
-                }
-            }
-        }
-    };
-
-    // T: *=, /=
-    ($type: tt, $($field:tt),*; $trait: tt, $operator_trait: tt, $func: ident, $op: tt) => {
-        impl<T> ops::$trait<T> for $type<T>
-        where
-            T: ops::$operator_trait<T, Output = T> + Copy,
-        {
-            fn $func(&mut self, rhs: T) {
-                *self = $type {
-                            $(
-                                $field: self.$field $op rhs
-                            ),*
-                        };
-            }
-        }
-    }
-}
-
-// Mul<VectorX<Scalar>> for Scalar
-macro_rules! impl_ops_mul_scalar {
-    ($type: tt, $($field:tt),*; $element_type: ty) => {
-        impl ops::Mul<$type<$element_type>> for $element_type {
-            type Output = $type<$element_type>;
-
-            fn mul(self, rhs: $type<$element_type>) -> Self::Output {
-                $type {
-                    $(
-                        $field: self * rhs.$field
-                    ),*
-                }
-            }
-        }
-    }
-}
-
-// Index, IndexMut
-macro_rules! impl_index_ops {
-    ($type: tt; $($field: tt),*) => {
-        impl<T> ops::Index<usize> for $type<T> {
-            type Output = T;
-
-            fn index(&self, index: usize) -> &T {
-                match index {
-                    $(
-                        index!($field) => &self.$field,
-                    )*
-                    _ => panic!("Out of range"),
-                }
-            }
-        }
-
-        impl<T> ops::IndexMut<usize> for $type<T> {
-            fn index_mut(&'_ mut self, index: usize) -> &'_ mut T {
-                match index {
-                    $(
-                        index!($field) => &mut self.$field,
-                    )*
-                    _ => panic!("Out of range"),
-                }
+    ($type_name: tt; $($element: tt),+; assign, $trait_name: tt, $func_name: tt, $op: tt) => {
+        impl<T: VectorElement> std::ops::$trait_name for $type_name<T> {
+            fn $func_name(&mut self, rhs: $type_name<T>) {
+                *self = *self $op rhs;
             }
         }
     };
 }
 
-macro_rules! index {
+macro_rules! impl_mul_scaler_vector {
+    ($type_name: tt; $($type: ty)*) => {
+        $(
+            impl std::ops::Mul<$type_name<$type>> for $type
+            {
+                type Output = $type_name<$type>;
+
+                fn mul(self, rhs: $type_name<$type>) -> Self::Output {
+                    rhs * self
+                }
+            }
+        )*
+    }
+}
+
+macro_rules! index_match {
     (x) => {
         0
     };
@@ -186,17 +122,49 @@ macro_rules! index {
         3
     };
 }
+macro_rules! impl_index {
+    ($vector_type_name: tt; $($element: tt),+) => {
+        impl_index!($vector_type_name; $($element),+; i8);
+        impl_index!($vector_type_name; $($element),+; i16);
+        impl_index!($vector_type_name; $($element),+; i32);
+        impl_index!($vector_type_name; $($element),+; i64);
+        impl_index!($vector_type_name; $($element),+; u8);
+        impl_index!($vector_type_name; $($element),+; u16);
+        impl_index!($vector_type_name; $($element),+; u32);
+        impl_index!($vector_type_name; $($element),+; u64);
+        impl_index!($vector_type_name; $($element),+; isize);
+        impl_index!($vector_type_name; $($element),+; usize);
+    };
+    ($vector_type_name: tt; $($element: tt),+; $index_type: ty) => {
+        impl<T: VectorElement> std::ops::Index<$index_type> for $vector_type_name<T> {
+            type Output = T;
+
+            fn index<'a>(&'a self, index: $index_type) -> &'a T {
+                match index {
+                    $(
+                        index_match!($element) => &self.$element,
+                    )+
+                    _ => panic!("Out of range"),
+                }
+            }
+        }
+
+        impl<T: VectorElement> std::ops::IndexMut<$index_type> for $vector_type_name<T> {
+            fn index_mut<'a>(&'a mut self, index: $index_type) -> &'a mut T {
+                match index {
+                    $(
+                        index_match!($element) => &mut self.$element,
+                    )+
+                    _ => panic!("Out of range"),
+                }
+            }
+        }
+    };
+}
 
 //
 // test
 //
-#[cfg(test)]
-#[macro_export]
-macro_rules! index_max {
-    ($index: expr) => { 0 };
-    ($index: expr, $field_head: tt, $($field_tail: tt),*) => { 1 + index_max($($field_tail),*) };
-}
-
 #[cfg(test)]
 #[macro_export]
 macro_rules! ops_test {
@@ -211,12 +179,6 @@ macro_rules! ops_test {
         ops_test_helper!($type, $($field),*; div_assign, /, /=, f32);
         ops_test_helper!(vector_op_scalar =>, $type, $($field),*; mul_scalar, *, f32);
         ops_test_helper!(vector_op_scalar =>, $type, $($field),*; div_scalar, /, f32);
-
-        //#[test]
-        //fn index() {
-        //    let v = Vector1 { x: 100.0 };
-        //    assert_eq!(v.x, v[0]);
-        //}
     };
 }
 

@@ -1,4 +1,6 @@
-use std::ops;
+use super::prelude::*;
+use super::vector::*;
+use num::{pow, One, Zero};
 #[cfg(feature = "serde")]
 use Serde::{Deserialize, Serialize};
 
@@ -9,52 +11,90 @@ pub struct Vector1<T> {
     pub x: T,
 }
 
-macro_rules! impl_vector1 {
-    () => {
-        impl_vector1!(f32);
-        impl_vector1!(f64);
-        impl_vector1!(i8);
-        impl_vector1!(i16);
-        impl_vector1!(i32);
-        impl_vector1!(i64);
-        impl_vector1!(i128);
-        impl_vector1!(isize);
-        impl_vector1!(u8);
-        impl_vector1!(u16);
-        impl_vector1!(u32);
-        impl_vector1!(u64);
-        impl_vector1!(u128);
-        impl_vector1!(usize);
-    };
-
-    ($element_type: ty) => {
-        impl Vector1<$element_type> {
-            pub const ZERO: Vector1<$element_type> = Vector1 {
-                x: 0 as $element_type,
-            };
-            pub const ONE: Vector1<$element_type> = Vector1 {
-                x: 1 as $element_type,
-            };
-            pub const UNIT_X: Vector1<$element_type> = Vector1 {
-                x: 1 as $element_type,
-            };
-        }
-    };
+impl<T: VectorElement> Vector for Vector1<T> {
+    type ElementType = T;
+    const DIMENSION: usize = 1;
 }
 
-impl_vector1!();
-
+//============================================================
+// operator
+//============================================================
 impl_ops!(Vector1; x);
+
+//============================================================
+// impl num
+//============================================================
+impl<T: VectorElement> One for Vector1<T> {
+    fn one() -> Self {
+        Self::from_scalar(T::one())
+    }
+}
+
+impl<T: VectorElement> Zero for Vector1<T> {
+    fn zero() -> Self {
+        Self::from_scalar(T::zero())
+    }
+
+    fn is_zero(&self) -> bool {
+        *self == Self::zero()
+    }
+}
+
+//============================================================
+// prelude
+//============================================================
+impl<T: VectorElement> FromScalar for Vector1<T> {
+    fn from_scalar(scalar: T) -> Self {
+        Vector1 { x: scalar }
+    }
+}
+
+impl<T: VectorElement> Vector1<T> {
+    pub fn unit_x() -> Self {
+        Vector1 { x: T::one() }
+    }
+
+    pub fn new(x: T) -> Self {
+        Vector1 { x }
+    }
+}
+
+impl<T: VectorElement> LengthSquared for Vector1<T> {
+    /// Return the square of the length.
+    fn length_squared(&self) -> T {
+        pow(self.x, 2)
+    }
+}
+
+impl<T: VectorElement> Dot for Vector1<T> {
+    /// Dot product.
+    fn dot(&self, rhs: Self) -> T {
+        self.x * rhs.x
+    }
+}
+
+//============================================================
+// from
+//============================================================
+impl<T: VectorElement> From<[T; 1]> for Vector1<T> {
+    fn from(v: [T; 1]) -> Vector1<T> {
+        Vector1::<T> { x: v[0] }
+    }
+}
+
+impl<T: VectorElement> From<T> for Vector1<T> {
+    fn from(v: T) -> Vector1<T> {
+        Vector1::<T> { x: v }
+    }
+}
 
 #[cfg(test)]
 mod test {
-    use super::*;
-    use proptest::*;
-    ops_test!(Vector1; x);
-    //#[test]
-    //#[should_panic]
-    //fn index_out_of_range(i in index_max!(x)..100_usize) {
-    //    let v = Vector1 { x: 0.0 };
-    //    let _ = v[i];
-    //}
+    use super::Vector1;
+
+    mod ops {
+        use super::Vector1;
+        use proptest::*;
+        ops_test!(Vector1; x);
+    }
 }
