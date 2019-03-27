@@ -147,7 +147,7 @@ impl<T: std::fmt::Display + VectorElement> std::fmt::Display for Vector3<T> {
 #[cfg(test)]
 mod test {
     use super::super::prelude::*;
-    use super::super::vector::*;
+    use super::super::VectorElement;
     use super::Vector3;
     use num::Zero;
 
