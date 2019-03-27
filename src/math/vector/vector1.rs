@@ -88,6 +88,15 @@ impl<T: VectorElement> From<T> for Vector1<T> {
     }
 }
 
+//============================================================
+// fmt
+//============================================================
+impl<T: std::fmt::Display + VectorElement> std::fmt::Display for Vector1<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({})", self.x)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::Vector1;

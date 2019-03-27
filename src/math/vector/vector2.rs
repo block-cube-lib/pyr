@@ -97,6 +97,15 @@ impl<T: VectorElement> Cross for Vector2<T> {
     }
 }
 
+//============================================================
+// fmt
+//============================================================
+impl<T: std::fmt::Display + VectorElement> std::fmt::Display for Vector2<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::Vector2;

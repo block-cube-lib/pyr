@@ -133,6 +133,15 @@ impl<T: VectorElement> From<(T, T, T)> for Vector3<T> {
 }
 
 //============================================================
+// fmt
+//============================================================
+impl<T: std::fmt::Display + VectorElement> std::fmt::Display for Vector3<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({}, {}, {})", self.x, self.y, self.z)
+    }
+}
+
+//============================================================
 // test
 //============================================================
 #[cfg(test)]
