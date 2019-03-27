@@ -81,6 +81,31 @@ impl<T: VectorElement> Dot for Vector4<T> {
 }
 
 //============================================================
+// from
+//============================================================
+impl<T: VectorElement> From<[T; 4]> for Vector4<T> {
+    fn from(v: [T; 4]) -> Vector4<T> {
+        Vector4::<T> {
+            x: v[0],
+            y: v[1],
+            z: v[2],
+            w: v[3],
+        }
+    }
+}
+
+impl<T: VectorElement> From<(T, T, T, T)> for Vector4<T> {
+    fn from(v: (T, T, T, T)) -> Vector4<T> {
+        Vector4::<T> {
+            x: v.0,
+            y: v.1,
+            z: v.2,
+            w: v.3,
+        }
+    }
+}
+
+//============================================================
 // fmt
 //============================================================
 impl<T: std::fmt::Display + VectorElement> std::fmt::Display for Vector4<T> {

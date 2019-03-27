@@ -98,6 +98,21 @@ impl<T: VectorElement> Cross for Vector2<T> {
 }
 
 //============================================================
+// from
+//============================================================
+impl<T: VectorElement> From<[T; 2]> for Vector2<T> {
+    fn from(v: [T; 2]) -> Vector2<T> {
+        Vector2::<T> { x: v[0], y: v[1] }
+    }
+}
+
+impl<T: VectorElement> From<(T, T)> for Vector2<T> {
+    fn from(v: (T, T)) -> Vector2<T> {
+        Vector2::<T> { x: v.0, y: v.1 }
+    }
+}
+
+//============================================================
 // fmt
 //============================================================
 impl<T: std::fmt::Display + VectorElement> std::fmt::Display for Vector2<T> {
