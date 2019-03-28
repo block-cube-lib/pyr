@@ -2,6 +2,9 @@ use super::prelude::*;
 use super::{Vector, VectorElement};
 use num::{pow, One, Zero};
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -226,8 +229,8 @@ mod test {
     fn serde() {
         use proptest::*;
 
-        proptest! (|(x in -100..-100, y in -100..100, z in -100..100)| {
-            let a = Vector3 { x ,y, z };
+        proptest! (|(x in -100..100, y in -100..100, z in -100..100)| {
+            let a = Vector3 { x, y, z };
             let json = serde_json::to_string(&a).unwrap();
             let b = serde_json::from_str(&json).unwrap();
             assert_eq!(a, b);

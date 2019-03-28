@@ -1,8 +1,9 @@
 use super::prelude::*;
 use super::{Vector, VectorElement};
 use num::{pow, One, Zero};
+
 #[cfg(feature = "serde")]
-use Serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default)]

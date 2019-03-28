@@ -3,6 +3,9 @@ use super::{Vector, VectorElement};
 use num::{pow, One, Zero};
 use std;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
