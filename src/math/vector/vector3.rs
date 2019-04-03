@@ -19,6 +19,8 @@ impl<T: VectorElement> Vector for Vector3<T> {
     const DIMENSION: usize = 3;
 }
 
+impl<T: VectorElement + Eq> Eq for Vector3<T> {}
+
 //============================================================
 // operator
 //============================================================

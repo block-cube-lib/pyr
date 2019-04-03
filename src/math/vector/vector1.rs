@@ -1,6 +1,7 @@
 use super::prelude::*;
 use super::{Vector, VectorElement};
 use num::{pow, One, Zero};
+use std::fmt;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -8,7 +9,7 @@ use serde::{Deserialize, Serialize};
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct Vector1<T> {
+pub struct Vector1<T: VectorElement> {
     pub x: T,
 }
 
@@ -16,6 +17,8 @@ impl<T: VectorElement> Vector for Vector1<T> {
     type ElementType = T;
     const DIMENSION: usize = 1;
 }
+
+impl<T: VectorElement + Eq> Eq for Vector1<T> {}
 
 //============================================================
 // operator
@@ -92,8 +95,8 @@ impl<T: VectorElement> From<T> for Vector1<T> {
 //============================================================
 // fmt
 //============================================================
-impl<T: std::fmt::Display + VectorElement> std::fmt::Display for Vector1<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl<T: fmt::Display + VectorElement> fmt::Display for Vector1<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({})", self.x)
     }
 }

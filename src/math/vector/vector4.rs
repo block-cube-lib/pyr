@@ -1,7 +1,6 @@
 use super::prelude::*;
 use super::{Vector, VectorElement};
 use num::{pow, One, Zero};
-use std;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -26,6 +25,8 @@ impl<T: VectorElement> Vector4<T> {
         Vector4 { x, y, z, w }
     }
 }
+
+impl<T: VectorElement + Eq> Eq for Vector4<T> {}
 
 //============================================================
 // operator

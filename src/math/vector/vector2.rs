@@ -18,6 +18,8 @@ impl<T: VectorElement> Vector for Vector2<T> {
     const DIMENSION: usize = 2;
 }
 
+impl<T: VectorElement + Eq> Eq for Vector2<T> {}
+
 //============================================================
 // operator
 //============================================================
