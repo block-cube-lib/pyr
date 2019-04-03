@@ -5,6 +5,8 @@
 /// Index, IndexMut
 /// Neg
 ///
+
+#[doc(hidden)]
 #[macro_export]
 macro_rules! impl_ops {
     ($type_name: tt; $( $element: tt ),+) => {
@@ -68,6 +70,7 @@ macro_rules! impl_ops {
         }
     };
 }
+
 macro_rules! impl_ops_helper {
     ($type_name: tt; $($element: tt),+; $trait_name: tt, $func_name: tt, $op: tt) => {
         impl<T: super::VectorElement> std::ops::$trait_name for $type_name<T> {
@@ -120,6 +123,7 @@ macro_rules! index_match {
         3
     };
 }
+
 macro_rules! impl_index {
     ($vector_type_name: tt; $($element: tt),+) => {
         impl_index!($vector_type_name; $($element),+; i8);
@@ -164,6 +168,7 @@ macro_rules! impl_index {
 // test
 //
 #[cfg(test)]
+#[doc(hidden)]
 #[macro_export]
 macro_rules! ops_test {
     ($type: tt; $($field: tt),*) => {
