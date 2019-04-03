@@ -8,16 +8,16 @@
 
 #[doc(hidden)]
 #[macro_export]
-macro_rules! impl_ops {
+macro_rules! impl_vector_ops {
     ($type_name: tt; $( $element: tt ),+) => {
-        impl_ops_helper!($type_name; $($element),+; Add, add, +);
-        impl_ops_helper!($type_name; $($element),+; Sub, sub, -);
-        impl_ops_helper!($type_name; $($element),+; Mul, mul, *);
-        impl_ops_helper!($type_name; $($element),+; Div, div, /);
-        impl_ops_helper!($type_name; $($element),+; assign, AddAssign, add_assign, +);
-        impl_ops_helper!($type_name; $($element),+; assign, SubAssign, sub_assign, -);
-        impl_ops_helper!($type_name; $($element),+; assign, MulAssign, mul_assign, *);
-        impl_ops_helper!($type_name; $($element),+; assign, DivAssign, div_assign, /);
+        impl_vector_ops_helper!($type_name; $($element),+; Add, add, +);
+        impl_vector_ops_helper!($type_name; $($element),+; Sub, sub, -);
+        impl_vector_ops_helper!($type_name; $($element),+; Mul, mul, *);
+        impl_vector_ops_helper!($type_name; $($element),+; Div, div, /);
+        impl_vector_ops_helper!($type_name; $($element),+; assign, AddAssign, add_assign, +);
+        impl_vector_ops_helper!($type_name; $($element),+; assign, SubAssign, sub_assign, -);
+        impl_vector_ops_helper!($type_name; $($element),+; assign, MulAssign, mul_assign, *);
+        impl_vector_ops_helper!($type_name; $($element),+; assign, DivAssign, div_assign, /);
 
         impl<T: super::VectorElement> std::ops::Mul<T> for $type_name<T> {
             type Output = $type_name<T>;
@@ -71,7 +71,7 @@ macro_rules! impl_ops {
     };
 }
 
-macro_rules! impl_ops_helper {
+macro_rules! impl_vector_ops_helper {
     ($type_name: tt; $($element: tt),+; $trait_name: tt, $func_name: tt, $op: tt) => {
         impl<T: super::VectorElement> std::ops::$trait_name for $type_name<T> {
             type Output = Self;
@@ -109,7 +109,7 @@ macro_rules! impl_mul_scaler_vector {
     }
 }
 
-macro_rules! index_match {
+macro_rules! vector_index_match {
     (x) => {
         0
     };
@@ -144,7 +144,7 @@ macro_rules! impl_index {
             fn index(&'_ self, index: $index_type) -> &'_ T {
                 match index {
                     $(
-                        index_match!($element) => &self.$element,
+                        vector_index_match!($element) => &self.$element,
                     )+
                     _ => panic!("Out of range"),
                 }
@@ -155,7 +155,7 @@ macro_rules! impl_index {
             fn index_mut(&'_ mut self, index: $index_type) -> &'_ mut T {
                 match index {
                     $(
-                        index_match!($element) => &mut self.$element,
+                        vector_index_match!($element) => &mut self.$element,
                     )+
                     _ => panic!("Out of range"),
                 }
