@@ -63,7 +63,7 @@ impl<T: VectorElement> Vector3<T> {
     }
 
     /// ```
-    /// use pyrite::math::vector3::Vector3;
+    /// use pyrite::math::Vector3;
     /// let v = Vector3::unit_y();
     /// assert_eq!(v, Vector3::new(0, 1, 0));
     /// ```
@@ -72,7 +72,7 @@ impl<T: VectorElement> Vector3<T> {
     }
 
     /// ```
-    /// use pyrite::math::vector3::Vector3;
+    /// use pyrite::math::Vector3;
     /// let v = Vector3::unit_z();
     /// assert_eq!(v, Vector3::new(0, 0, 1));
     /// ```

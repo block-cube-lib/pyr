@@ -62,7 +62,7 @@ impl<T: VectorElement> Vector2<T> {
     }
 
     /// ```
-    /// use pyrite::math::vector2::Vector2;
+    /// use pyrite::math::Vector2;
     /// let v = Vector2::unit_y();
     /// assert_eq!(v, Vector2::new(0, 1));
     /// ```
