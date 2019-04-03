@@ -13,10 +13,10 @@ mod ops;
 
 pub mod prelude;
 
-pub mod vector1;
-pub mod vector2;
-pub mod vector3;
-pub mod vector4;
+mod vector1;
+mod vector2;
+mod vector3;
+mod vector4;
 
 pub use self::vector1::Vector1;
 pub use self::vector2::Vector2;
