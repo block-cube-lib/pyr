@@ -114,6 +114,21 @@ impl<T: VectorElement> Cross for Vector3<T> {
     }
 }
 
+impl<T> Refrect for Vector3<T>
+where
+    T: VectorElement + std::ops::Mul<Self, Output = Self>,
+    Vector3<T>: Vector<ElementType = T>
+        + Dot
+        + std::ops::Mul<T, Output = Self>
+        + std::ops::Sub<Self, Output = Self>
+        + std::ops::Mul<Self, Output = Self>,
+{
+    fn refrect(&self, normal: Self) -> Self {
+        let two: T = T::one() + T::one();
+        *self - two * self.dot(normal) * normal
+    }
+}
+
 //============================================================
 // from
 //============================================================
@@ -227,6 +242,17 @@ mod test {
     }
 
     #[test]
+    fn refrect() {
+        for x in (1..=180).map(|v| v as f64) {
+            let (sin, cos) = x.to_radians().sin_cos();
+            let v = Vector3::new(cos, -sin, 0.0);
+            let n = Vector3::unit_y();
+            let refrect_vector = v.refrect(n);
+            assert_eq!(refrect_vector, Vector3::new(cos, sin, 0.0));
+        }
+    }
+
+    #[test]
     #[cfg(feature = "serde")]
     fn serde() {
         use proptest::*;
@@ -285,7 +311,6 @@ mod test_ops {
         let mut v = Vector3::zero();
         v[3] = 1;
     }
-
 }
 
 #[cfg(test)]

@@ -69,6 +69,10 @@ pub trait Normalize: Normalized + Sized {
     }
 }
 
+pub trait Refrect: Vector {
+    fn refrect(&self, normal: Self) -> Self;
+}
+
 //============================================================
 // impl iter traits
 //============================================================
