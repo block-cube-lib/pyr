@@ -114,7 +114,7 @@ impl<T: VectorElement> Cross for Vector3<T> {
     }
 }
 
-impl<T> Refrect for Vector3<T>
+impl<T> Reflect for Vector3<T>
 where
     T: VectorElement + std::ops::Mul<Self, Output = Self>,
     Vector3<T>: Vector<ElementType = T>
@@ -123,7 +123,7 @@ where
         + std::ops::Sub<Self, Output = Self>
         + std::ops::Mul<Self, Output = Self>,
 {
-    fn refrect(&self, normal: Self) -> Self {
+    fn reflect(&self, normal: Self) -> Self {
         let two: T = T::one() + T::one();
         *self - two * self.dot(normal) * normal
     }
@@ -242,13 +242,13 @@ mod test {
     }
 
     #[test]
-    fn refrect() {
+    fn reflect() {
         for x in (1..=180).map(|v| v as f64) {
             let (sin, cos) = x.to_radians().sin_cos();
             let v = Vector3::new(cos, -sin, 0.0);
             let n = Vector3::unit_y();
-            let refrect_vector = v.refrect(n);
-            assert_eq!(refrect_vector, Vector3::new(cos, sin, 0.0));
+            let reflect_vector = v.reflect(n);
+            assert_eq!(reflect_vector, Vector3::new(cos, sin, 0.0));
         }
     }
 
