@@ -146,7 +146,7 @@ macro_rules! impl_index {
                     $(
                         vector_index_match!($element) => &self.$element,
                     )+
-                    _ => panic!("Out of range"),
+                    _ => panic!("Out of range. index = {}", index),
                 }
             }
         }
@@ -157,7 +157,7 @@ macro_rules! impl_index {
                     $(
                         vector_index_match!($element) => &mut self.$element,
                     )+
-                    _ => panic!("Out of range"),
+                    _ => panic!("Out of range. index = {}", index),
                 }
             }
         }
