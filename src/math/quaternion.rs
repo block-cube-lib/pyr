@@ -1,18 +1,23 @@
+use num::Float;
 use std::ops;
 
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 #[repr(C)]
-pub struct Quaternion {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-    pub w: f32,
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+pub struct Quaternion<T: Float> {
+    pub x: T,
+    pub y: T,
+    pub z: T,
+    pub w: T,
 }
 
-impl ops::Index<usize> for Quaternion {
-    type Output = f32;
+impl<T: Float> ops::Index<usize> for Quaternion<T> {
+    type Output = T;
 
-    fn index<'a>(&'a self, index: usize) -> &'a f32 {
+    fn index(&self, index: usize) -> &Self::Output {
         match index {
             0 => &self.x,
             1 => &self.y,
@@ -23,8 +28,8 @@ impl ops::Index<usize> for Quaternion {
     }
 }
 
-impl ops::IndexMut<usize> for Quaternion {
-    fn index_mut<'a>(&'a mut self, index: usize) -> &'a mut f32 {
+impl<T: Float> ops::IndexMut<usize> for Quaternion<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         match index {
             0 => &mut self.x,
             1 => &mut self.y,
