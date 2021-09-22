@@ -40,7 +40,7 @@ impl_vector_ops!(Vector4; x, y, z, w);
 /// Same to Vector4 { x: 0, y: 0, z: 0 , w: 0}.
 impl<T: VectorElement> Zero for Vector4<T> {
     fn zero() -> Self {
-        Self::from_scalar(T::zero())
+        (T::zero(), T::zero(), T::zero(), T::zero()).into()
     }
 
     fn is_zero(&self) -> bool {
@@ -51,21 +51,7 @@ impl<T: VectorElement> Zero for Vector4<T> {
 /// Make a Vector4 { x: 1, y: 1, z: 1, w: 0 }.
 impl<T: VectorElement> One for Vector4<T> {
     fn one() -> Self {
-        Self::from_scalar(T::one())
-    }
-}
-
-//============================================================
-// construct traits
-//============================================================
-impl<T: VectorElement> FromScalar for Vector4<T> {
-    fn from_scalar(scalar: Self::ElementType) -> Self {
-        Vector4 {
-            x: scalar,
-            y: scalar,
-            z: scalar,
-            w: scalar,
-        }
+        (T::one(), T::one(), T::one(), T::one()).into()
     }
 }
 

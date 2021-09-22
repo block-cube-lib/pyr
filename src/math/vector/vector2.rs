@@ -32,7 +32,7 @@ impl_vector_ops!(Vector2; x, y);
 /// Same to Vector2 { x: 0, y: 0 }.
 impl<T: VectorElement> Zero for Vector2<T> {
     fn zero() -> Self {
-        Self::from_scalar(T::zero())
+        (T::zero(), T::zero()).into()
     }
 
     fn is_zero(&self) -> bool {
@@ -43,7 +43,7 @@ impl<T: VectorElement> Zero for Vector2<T> {
 /// Make a Vector2 { x: 1, y: 1 }.
 impl<T: VectorElement> One for Vector2<T> {
     fn one() -> Self {
-        Self::from_scalar(T::one())
+        (T::one(), T::one()).into()
     }
 }
 
@@ -68,12 +68,6 @@ impl<T: VectorElement> Vector2<T> {
     /// ```
     pub fn unit_y() -> Self {
         Vector2::new(T::zero(), T::one())
-    }
-}
-
-impl<T: VectorElement> FromScalar for Vector2<T> {
-    fn from_scalar(scalar: T) -> Self {
-        Self::new(scalar, scalar)
     }
 }
 

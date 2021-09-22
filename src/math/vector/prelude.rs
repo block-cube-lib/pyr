@@ -23,13 +23,6 @@ where
 }
 
 //============================================================
-// construct traits
-//============================================================
-pub trait FromScalar: Vector {
-    fn from_scalar(scalar: Self::ElementType) -> Self;
-}
-
-//============================================================
 // function traits
 //============================================================
 pub trait LengthSquared: Vector {
@@ -131,7 +124,7 @@ where
 
 impl<V: Vector> Normalized for V
 where
-    V: ops::Div<Self::ElementType, Output = Self> + FromScalar + LengthSquared,
+    V: ops::Div<Self::ElementType, Output = Self> + LengthSquared + Zero,
     V::ElementType: Float + Sized,
 {
     fn normalized(&self) -> Self {
@@ -140,7 +133,7 @@ where
         if length_squared != zero {
             *self / length_squared.sqrt()
         } else {
-            Self::from_scalar(zero)
+            V::zero()
         }
     }
 }
