@@ -1,8 +1,8 @@
 [package]
 name = "pyrite"
 version = "0.1.0"
-edition = "2018"
 authors = ["block <block.cube.lib@gmail.com>"]
+edition = "2021"
 
 [dependencies]
 num = "0.2"
