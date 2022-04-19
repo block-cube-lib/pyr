@@ -1,259 +1,243 @@
-///
-/// impl vector operators.
-///
-/// Add(Assign), Sub(Assign), Mut(Assign), Div(Assign)
-/// Index, IndexMut
-/// Neg
-///
+use paste::paste;
 
-#[doc(hidden)]
-#[macro_export]
-macro_rules! impl_vector_ops {
-    ($type_name: tt; $( $element: tt ),+) => {
-        impl_vector_ops_helper!($type_name; $($element),+; Add, add, +);
-        impl_vector_ops_helper!($type_name; $($element),+; Sub, sub, -);
-        impl_vector_ops_helper!($type_name; $($element),+; Mul, mul, *);
-        impl_vector_ops_helper!($type_name; $($element),+; Div, div, /);
-        impl_vector_ops_helper!($type_name; $($element),+; assign, AddAssign, add_assign, +);
-        impl_vector_ops_helper!($type_name; $($element),+; assign, SubAssign, sub_assign, -);
-        impl_vector_ops_helper!($type_name; $($element),+; assign, MulAssign, mul_assign, *);
-        impl_vector_ops_helper!($type_name; $($element),+; assign, DivAssign, div_assign, /);
-
-        impl<T: super::VectorElement> std::ops::Mul<T> for $type_name<T> {
-            type Output = $type_name<T>;
-
-            fn mul(self, rhs: T) -> Self::Output {
-                $type_name::<T> {
-                    $(
-                        $element: self.$element * rhs,
-                    )+
-                }
-            }
-        }
-        impl<T: super::VectorElement> std::ops::Div<T> for $type_name<T> {
-            type Output = $type_name<T>;
-
-            fn div(self, rhs: T) -> Self::Output {
-                $type_name::<T> {
-                    $(
-                        $element: self.$element / rhs,
-                    )+
-                }
-            }
-        }
-
-        impl<T: super::VectorElement> std::ops::MulAssign<T> for $type_name<T> {
-            fn mul_assign(&mut self, rhs: T) {
-                *self = *self * rhs;
-            }
-        }
-        impl<T: super::VectorElement> std::ops::DivAssign<T> for $type_name<T> {
-            fn div_assign(&mut self, rhs: T) {
-                *self = *self / rhs;
-            }
-        }
-
-        impl_mul_scaler_vector!($type_name; i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 isize usize);
-        impl_index!($type_name; $($element),+);
-
-        impl<T: super::VectorElement> std::ops::Neg for $type_name<T>
-        where T: std::ops::Neg<Output = T> {
-            type Output = $type_name<T>;
-
-            fn neg(self) -> Self::Output {
-                $type_name {
-                    $(
-                        $element: -self.$element,
-                    )*
-                }
-            }
-        }
-    };
-}
-
-macro_rules! impl_vector_ops_helper {
-    ($type_name: tt; $($element: tt),+; $trait_name: tt, $func_name: tt, $op: tt) => {
-        impl<T: super::VectorElement> std::ops::$trait_name for $type_name<T> {
+macro_rules! impl_ops {
+    ($trait_name: tt, $function_name: ident, $op: tt) => {
+        impl<T: VectorElement, const DIMENSION: usize> $trait_name<Self> for Vector<T, DIMENSION> {
             type Output = Self;
 
-            fn $func_name(self, rhs: Self) -> Self::Output {
-                $type_name::<T> {
-                    $(
-                        $element: self.$element $op rhs.$element,
-                    )+
+            fn $function_name(self, rhs: Self) -> Self::Output {
+                let mut result = Self::zero();
+                for i in 0..DIMENSION {
+                    result.elements[i] = self.elements[i] $op rhs.elements[i];
+                }
+                result
+            }
+        }
+
+        paste!{
+            impl<T: VectorElement, const DIMENSION: usize> [<$trait_name Assign>]<Self> for Vector<T, DIMENSION> {
+                fn [<$function_name _assign>](&mut self, rhs: Self) {
+                    *self = *self $op rhs;
                 }
             }
         }
     };
-    ($type_name: tt; $($element: tt),+; assign, $trait_name: tt, $func_name: tt, $op: tt) => {
-        impl<T: super::VectorElement> std::ops::$trait_name for $type_name<T> {
-            fn $func_name(&mut self, rhs: $type_name<T>) {
-                *self = *self $op rhs;
+}
+impl_ops!(Add, add, +);
+impl_ops!(Sub, sub, -);
+impl_ops!(Mul, mul, *);
+impl_ops!(Div, div, /);
+
+macro_rules! impl_ops_vector_scalar {
+    ($trait_name: tt, $function_name: ident, $op: tt) => {
+        impl<T: VectorElement, const DIMENSION: usize> $trait_name<T> for Vector<T, DIMENSION> {
+            type Output = Self;
+
+            fn $function_name(self, scalar: T) -> Self::Output {
+                self $op Self::from([scalar; DIMENSION])
+            }
+        }
+
+        paste!{
+            impl<T: VectorElement, const DIMENSION: usize> [<$trait_name Assign>]<T> for Vector<T, DIMENSION> {
+                fn [<$function_name _assign>](&mut self, scalar: T) {
+                    *self = *self $op scalar;
+                }
             }
         }
     };
 }
 
-macro_rules! impl_mul_scaler_vector {
-    ($type_name: tt; $($type: ty)*) => {
-        $(
-            impl std::ops::Mul<$type_name<$type>> for $type
-            {
-                type Output = $type_name<$type>;
+impl_ops_vector_scalar!(Mul, mul, *);
+impl_ops_vector_scalar!(Div, div, /);
 
-                fn mul(self, rhs: $type_name<$type>) -> Self::Output {
-                    rhs * self
-                }
+macro_rules! impl_mul_scalar_vector {
+    ($type: ty) => {
+        impl<const DIMENSION: usize> Mul<Vector<$type, DIMENSION>> for $type {
+            type Output = Vector<$type, DIMENSION>;
+
+            fn mul(self, rhs: Vector<$type, DIMENSION>) -> Self::Output {
+                rhs * self
             }
-        )*
+        }
+    };
+}
+
+impl_mul_scalar_vector!(i8);
+impl_mul_scalar_vector!(i16);
+impl_mul_scalar_vector!(i32);
+impl_mul_scalar_vector!(i64);
+impl_mul_scalar_vector!(i128);
+impl_mul_scalar_vector!(u8);
+impl_mul_scalar_vector!(u16);
+impl_mul_scalar_vector!(u32);
+impl_mul_scalar_vector!(u64);
+impl_mul_scalar_vector!(u128);
+impl_mul_scalar_vector!(isize);
+impl_mul_scalar_vector!(usize);
+impl_mul_scalar_vector!(f32);
+impl_mul_scalar_vector!(f64);
+
+impl<T: VectorElement, const DIMENSION: usize> Index<usize> for Vector<T, DIMENSION> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.elements[index]
     }
 }
 
-macro_rules! vector_index_match {
-    (x) => {
-        0
-    };
-    (y) => {
-        1
-    };
-    (z) => {
-        2
-    };
-    (w) => {
-        3
-    };
+impl<T: VectorElement, const DIMENSION: usize> IndexMut<usize> for Vector<T, DIMENSION> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.elements[index]
+    }
 }
 
-macro_rules! impl_index {
-    ($vector_type_name: tt; $($element: tt),+) => {
-        impl_index!($vector_type_name; $($element),+; i8);
-        impl_index!($vector_type_name; $($element),+; i16);
-        impl_index!($vector_type_name; $($element),+; i32);
-        impl_index!($vector_type_name; $($element),+; i64);
-        impl_index!($vector_type_name; $($element),+; u8);
-        impl_index!($vector_type_name; $($element),+; u16);
-        impl_index!($vector_type_name; $($element),+; u32);
-        impl_index!($vector_type_name; $($element),+; u64);
-        impl_index!($vector_type_name; $($element),+; isize);
-        impl_index!($vector_type_name; $($element),+; usize);
-    };
-    ($vector_type_name: tt; $($element: tt),+; $index_type: ty) => {
-        impl<T: super::VectorElement> std::ops::Index<$index_type> for $vector_type_name<T> {
-            type Output = T;
-
-            fn index(&'_ self, index: $index_type) -> &'_ T {
-                match index {
-                    $(
-                        vector_index_match!($element) => &self.$element,
-                    )+
-                    _ => panic!("Out of range. index = {}", index),
-                }
-            }
+impl<T, const DIMENSION: usize> Neg for Vector<T, DIMENSION>
+where
+    T: VectorElement + Neg<Output = T>,
+{
+    type Output = Self;
+    fn neg(self) -> Self::Output {
+        let mut v = Self::zero();
+        for i in 0..DIMENSION {
+            v[i] = self[i].neg();
         }
-
-        impl<T: super::VectorElement> std::ops::IndexMut<$index_type> for $vector_type_name<T> {
-            fn index_mut(&'_ mut self, index: $index_type) -> &'_ mut T {
-                match index {
-                    $(
-                        vector_index_match!($element) => &mut self.$element,
-                    )+
-                    _ => panic!("Out of range. index = {}", index),
-                }
-            }
-        }
-    };
-}
-
-//
-// test
-//
-#[cfg(test)]
-#[doc(hidden)]
-#[macro_export]
-macro_rules! ops_test {
-    ($type: tt; $($field: tt),*) => {
-        ops_test_helper!($type, $($field),*; add, +, f32);
-        ops_test_helper!($type, $($field),*; sub, -, f32);
-        ops_test_helper!($type, $($field),*; mul, *, f32);
-        ops_test_helper!($type, $($field),*; div, /, f32);
-        ops_test_helper!($type, $($field),*; add_assign, +, +=, f32);
-        ops_test_helper!($type, $($field),*; sub_assign, -, -=, f32);
-        ops_test_helper!($type, $($field),*; mul_assign, *, *=, f32);
-        ops_test_helper!($type, $($field),*; div_assign, /, /=, f32);
-        ops_test_helper!(vector_op_scalar =>, $type, $($field),*; mul_scalar, *, f32);
-        ops_test_helper!(vector_op_scalar =>, $type, $($field),*; div_scalar, /, f32);
-    };
+        v
+    }
 }
 
 #[cfg(test)]
-macro_rules! ops_test_helper {
-    ($type: tt, $($field: tt),*; $test_name: ident, $op: tt, $element_type: ty) => {
-        proptest! {
-            #[test]
-            fn $test_name( $($field in -100.0..100.0),* ) {
-                $(
-                    let $field = $field as $element_type;
-                )*
-                let v1 = $type {
-                    $(
-                        $field: $field
-                    ),*
-                };
-                let v2 = $type {
-                    $(
-                        $field: $field * 2.0
-                    ),*
-                };
-                let v3 = v1 $op v2;
-                $(
-                    assert_eq!(v3.$field, $field $op ($field * 2.0));
-                )*
-            }
-        }
-    };
-    ($type: tt, $($field: tt),*; $test_name: ident, $op: tt, $assign_op: tt, $element_type: ty) => {
-        proptest! {
-            #[test]
-            fn $test_name( $($field in -100.0..100.0),* ) {
-                $(
-                    let $field = $field as $element_type;
-                )*
-                let mut v1 = $type {
-                    $(
-                        $field: $field
-                    ),*
-                };
-                let v2 = $type {
-                    $(
-                        $field: $field * 2.0
-                    ),*
-                };
+mod ops_test {
+    use super::*;
 
-                let v3 = v1 $op v2;
-                v1 $assign_op v2;
-                assert_eq!(v1, v3);
-            }
-        }
-    };
-    (vector_op_scalar =>, $type: tt, $($field: tt),*; $test_name: ident, $op: tt, $element_type: ty) => {
-        proptest! {
-            #[test]
-            fn $test_name( $($field in -100.0..100.0),* ,scalar in -100.0..100.0) {
-                let scalar = scalar as $element_type;
-                $(
-                    let $field = $field as $element_type;
-                )*
-                let mut v = $type {
-                    $(
-                        $field: $field
-                    ),*
-                };
+    type Vector3<T> = Vector<T, 3>;
 
-                v = v $op scalar;
-                $(
-                    assert_eq!(v.$field, $field $op scalar);
-                )*
-            }
-        }
-    };
+    #[test]
+    fn add() {
+        let v1 = Vector3::new(1, 2, 4);
+        let v2 = Vector3::new(5, 3, 7);
+        assert_eq!(v1 + v2, [6, 5, 11].to_vector());
+    }
+
+    #[test]
+    fn sub() {
+        let v1 = Vector3::new(1, 2, 4);
+        let v2 = Vector3::new(5, 3, 7);
+        assert_eq!(v1 - v2, [-4, -1, -3].to_vector());
+    }
+
+    #[test]
+    fn mul() {
+        let v1 = Vector3::new(1, 2, 4);
+        let v2 = Vector3::new(5, 3, 7);
+        assert_eq!(v1 * v2, [5, 6, 28].to_vector());
+    }
+
+    #[test]
+    fn div() {
+        let v1 = Vector3::new(9.0, 10.0, 3.0);
+        let v2 = Vector3::new(3.0, 2.0, 1.5);
+        assert_eq!(v1 / v2, [3.0, 5.0, 2.0].to_vector());
+    }
+
+    #[test]
+    fn add_assign() {
+        let v1 = Vector3::new(1, 2, 4);
+        let v2 = Vector3::new(5, 3, 7);
+        let mut v = v1;
+        v += v2;
+        assert_eq!(v, v1 + v2);
+    }
+
+    #[test]
+    fn sub_assign() {
+        let v1 = Vector3::new(1, 2, 4);
+        let v2 = Vector3::new(5, 3, 7);
+        let mut v = v1;
+        v -= v2;
+        assert_eq!(v, v1 - v2);
+    }
+
+    #[test]
+    fn mul_assign() {
+        let v1 = Vector3::new(1, 2, 4);
+        let v2 = Vector3::new(5, 3, 7);
+        let mut v = v1;
+        v *= v2;
+        assert_eq!(v, v1 * v2);
+    }
+
+    #[test]
+    fn div_assign() {
+        let v1 = Vector3::new(9.0, 10.0, 3.0);
+        let v2 = Vector3::new(3.0, 2.0, 1.5);
+        let mut v = v1;
+        v /= v2;
+        assert_eq!(v, v1 / v2);
+    }
+
+    #[test]
+    fn mul_scalar() {
+        let v = Vector3::new(1.0, 2.0, 3.0);
+        assert_eq!(v * 2.0, [2.0, 4.0, 6.0].to_vector());
+    }
+
+    #[test]
+    fn div_scalar() {
+        let v = Vector3::new(1.0, 2.0, 3.0);
+        assert_eq!(v / 2.0, [0.5, 1.0, 1.5].to_vector());
+    }
+
+    #[test]
+    fn mul_assgin_scalar() {
+        let mut v = Vector3::new(1.0, 2.0, 3.0);
+        v *= 2.0;
+        assert_eq!(v, [2.0, 4.0, 6.0].to_vector());
+    }
+
+    #[test]
+    fn div_assgin_scalar() {
+        let mut v = Vector3::new(1.0, 2.0, 3.0);
+        v /= 2.0;
+        assert_eq!(v, [0.5, 1.0, 1.5].to_vector());
+    }
+
+    #[test]
+    fn mul_scalar_vector() {
+        let v = Vector3::new(1.0, 2.0, 3.0);
+        assert_eq!(2.0 * v, [2.0, 4.0, 6.0].to_vector());
+    }
+
+    #[test]
+    fn index() {
+        let v = Vector3::new(2, 3, 4);
+        assert_eq!(v[0], 2);
+        assert_eq!(v[1], 3);
+        assert_eq!(v[2], 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn index_out_of_range() {
+        let v = Vector3::new(2, 3, 4);
+        let _ = v[3];
+    }
+
+    #[test]
+    fn index_mut() {
+        let mut v = Vector3::zero();
+        v[0] = 2;
+        v[1] = 3;
+        v[2] = 4;
+        assert_eq!(v[0], 2);
+        assert_eq!(v[1], 3);
+        assert_eq!(v[2], 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn index_mut_out_of_range() {
+        let mut v = Vector3::zero();
+        v[3] = 42;
+    }
 }

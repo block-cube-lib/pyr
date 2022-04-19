@@ -1,12 +1,14 @@
 [package]
-name = "pyrite"
+name = "pyr"
 version = "0.1.0"
 authors = ["block <block.cube.lib@gmail.com>"]
 edition = "2021"
 
 [dependencies]
 num = "0.2"
-serde = { version = "1.0", features = ["derive"], optional = true }
+paste = "1.0.7"
+rand = "0.8.4"
+serde = { version = "1.0.136", features = ["derive"] }
 
 [dev-dependencies]
 proptest = "0.8.7"
@@ -14,5 +16,5 @@ serde_json = "1.0"
 criterion = "0.3"
 
 [[bench]]
-name = "pyrite_benchmark"
+name = "pyr_benchmark"
 harness = false

@@ -1,5 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use pyrite::math::{prelude::*, *};
+use pyr::math::*;
+
+type Vector3 = F64Vector3;
 
 pub fn bench_mul_vec3_scalar(c: &mut Criterion) {
     let v = Vector3::new(1.0, 2.0, 3.0);
@@ -68,6 +70,17 @@ pub fn normalized(c: &mut Criterion) {
     });
 }
 
+pub fn dot(c: &mut Criterion) {
+    let v1 = Vector3::new(1.0, 2.0, 3.0);
+    let v2 = Vector3::new(1.0, 2.0, 3.0);
+    c.bench_function("dot", |b| {
+        b.iter(|| {
+            let n = v1.dot(v2);
+            black_box(n);
+        })
+    });
+}
+
 criterion_group!(
     benches,
     bench_mul_vec3_scalar,
@@ -78,5 +91,6 @@ criterion_group!(
     length_squared,
     length,
     normalized,
+    dot,
 );
 criterion_main!(benches);
