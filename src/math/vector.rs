@@ -227,8 +227,8 @@ where
 {
     fn to_vector(self) -> Vector<T, DIMENSION> {
         let mut elements = [T::default(); DIMENSION];
-        for i in 0..DIMENSION {
-            elements[i] = *self.get(i);
+        for (i, element) in elements.iter_mut().enumerate() {
+            *element = *self.get(i);
         }
         Vector::<T, DIMENSION> { elements }
     }
