@@ -2,7 +2,7 @@ mod traits;
 
 pub use self::traits::*;
 use crate::math::vector::*;
-use num::{One, Zero};
+use num::{Float, One, Zero};
 use std::ops::*;
 
 #[repr(C)]
@@ -55,6 +55,14 @@ impl<T: MatrixElement, const ROW: usize, const COL: usize> Matrix<T, ROW, COL> {
             v[i] = self.elements[i][n];
         }
         v
+    }
+}
+
+impl<T: MatrixElement + Float> Matrix<T, 2, 2> {
+    pub fn rotate(theta: T) -> Self {
+        let c = theta.cos();
+        let s = theta.sin();
+        [[c, s], [-s, c]].into()
     }
 }
 

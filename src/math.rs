@@ -30,6 +30,16 @@ mod test {
         let m: Matrix<i32, 3, 2> = [[1, 2], [3, 4], [5, 6]].into();
         assert_eq!(v * m, [40, 52].into());
     }
+
+    #[test]
+    fn rotate_2x2() {
+        let m = Matrix::<f64, 2, 2>::rotate(45.0_f64.to_radians());
+        let v = Vector::<f64, 2>::unit_y();
+        let rot_v = v * m;
+        let result = Vector::<f64, 2>::new(-1.0, 1.0).normalized();
+        assert!((rot_v.x() - result.x()).abs() < 1.0e-10);
+        assert!((rot_v.y() - result.y()).abs() < 1.0e-10);
+    }
 }
 
 pub type F32Vector1 = Vector<f32, 1>;
