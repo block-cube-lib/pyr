@@ -9,12 +9,12 @@ pub use self::vector::*;
 impl<T: MatrixElement, const ROW: usize, const COL: usize> std::ops::Mul<Matrix<T, ROW, COL>>
     for Vector<T, ROW>
 {
-    type Output = Matrix<T, 1, COL>;
+    type Output = Vector<T, COL>;
 
     fn mul(self, m: Matrix<T, ROW, COL>) -> Self::Output {
         let mut ret = Self::Output::default();
         for i in 0..COL {
-            ret[0][i] = self.dot(m.col(i));
+            ret[i] = self.dot(m.col(i));
         }
         ret
     }
@@ -28,7 +28,7 @@ mod test {
     fn mul_vector_matrix() {
         let v: Vector<i32, 3> = [3, 4, 5].into();
         let m: Matrix<i32, 3, 2> = [[1, 2], [3, 4], [5, 6]].into();
-        assert_eq!(v * m, [[40, 52]].into());
+        assert_eq!(v * m, [40, 52].into());
     }
 }
 
