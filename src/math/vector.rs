@@ -1,18 +1,102 @@
+mod array_wrapper;
 mod traits;
+mod vector1;
+mod vector2;
+mod vector3;
+mod vector4;
 
+pub use array_wrapper::ArrayWrapper;
+pub use traits::{VectorElement, VectorLike};
+pub use vector1::Vector1;
+pub use vector2::Vector2;
+pub use vector3::Vector3;
+pub use vector4::Vector4;
+
+#[doc(hidden)]
+pub trait VectorTypeHolder<T: VectorElement, const D: usize> {
+    type Vector;
+}
+
+#[doc(hidden)]
+pub struct VectorTypeResolver<T: VectorElement, const D: usize> {
+    _marker: std::marker::PhantomData<fn() -> [T; D]>,
+}
+
+impl<T: VectorElement> VectorTypeHolder<T, 1> for VectorTypeResolver<T, 1> {
+    type Vector = Vector1<T>;
+}
+impl<T: VectorElement> VectorTypeHolder<T, 2> for VectorTypeResolver<T, 2> {
+    type Vector = Vector2<T>;
+}
+impl<T: VectorElement> VectorTypeHolder<T, 3> for VectorTypeResolver<T, 3> {
+    type Vector = Vector3<T>;
+}
+impl<T: VectorElement> VectorTypeHolder<T, 4> for VectorTypeResolver<T, 4> {
+    type Vector = Vector4<T>;
+}
+
+seq_macro::seq!(N in 5..32 {
+    impl<T: VectorElement> VectorTypeHolder<T, N> for VectorTypeResolver<T, N> {
+        type Vector = ArrayWrapper<T, N>;
+    }
+});
+
+/// Vector type. T: Type of the element. D: Dimension. D must be in the range of 1 to 32.
+pub type Vector<T, const D: usize> = <VectorTypeResolver<T, D> as VectorTypeHolder<T, D>>::Vector;
+
+/*
+pub(crate) mod macros;
+mod traits;
+mod vector1;
+mod vector2;
+
+use crate::{impl_vector, impl_vector_ops};
 use num::{Float, One, Zero};
+use seq_macro::seq;
+use std::marker::PhantomData;
+
 pub use std::fmt::{self, Display, Formatter};
-use std::ops::*;
 pub use traits::*;
+pub use vector1::Vector1;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Vector<T: VectorElement, const DIMENSION: usize> {
-    elements: [T; DIMENSION],
+pub struct Vector3<T: VectorElement> {
+    pub x: T,
+    pub y: T,
+    pub z: T,
+}
+impl_vector_ops!(Vector3, 1, x, 0, y, 1, z, 2);
+impl_vector!(Vector3, 1, x, 0, y, 1, z, 2);
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Vector4<T: VectorElement> {
+    pub x: T,
+    pub y: T,
+    pub z: T,
+    pub w: T,
+}
+impl<T: VectorElement + Eq> Eq for Vector4<T> {}
+impl<T: VectorElement> VectorLike<T, 4> for Vector4<T> {
+    fn get(&self, index: usize) -> &T {
+        match index {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            3 => &self.z,
+            _ => panic!("Out of range vector elements index. index = {index}."),
+        }
+    }
 }
 
-impl<T, const DIMENSION: usize> Eq for Vector<T, DIMENSION> where T: VectorElement + Eq {}
-impl<T, const DIMENSION: usize> Default for Vector<T, DIMENSION>
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ArrayWrapper<T: VectorElement, const DIMENSION: usize> {
+    elements: [T; DIMENSION],
+}
+impl<T, const DIMENSION: usize> Eq for ArrayWrapper<T, DIMENSION> where T: VectorElement + Eq {}
+impl<T, const DIMENSION: usize> Default for ArrayWrapper<T, DIMENSION>
 where
     T: VectorElement,
 {
@@ -22,6 +106,40 @@ where
         }
     }
 }
+impl<T: VectorElement, const DIMENSION: usize> VectorLike<T, DIMENSION>
+    for ArrayWrapper<T, DIMENSION>
+{
+    fn get(&self, index: usize) -> &T {
+        &self.elements[index]
+    }
+}
+
+trait VectorTypeHolder<T, const D: usize> {
+    type Vector;
+}
+struct VectorTypeResolver<T, const D: usize> {
+    _marker: PhantomData<fn() -> [T; D]>,
+}
+
+impl<T> VectorTypeHolder<T, 1> for VectorTypeResolver<T, 2> {
+    type Vector = Vector2<T>;
+}
+impl<T> VectorTypeHolder<T, 2> for VectorTypeResolver<T, 2> {
+    type Vector = Vector2<T>;
+}
+impl<T> VectorTypeHolder<T, 3> for VectorTypeResolver<T, 3> {
+    type Vector = Vector3<T>;
+}
+impl<T> VectorTypeHolder<T, 4> for VectorTypeResolver<T, 4> {
+    type Vector = Vector4<T>;
+}
+seq!(N in 5..256 {
+    impl<T> VectorTypeHolder<T, N> for VectorTypeResolver<T, N> {
+        type Vector = ArrayWrapper<T, N>;
+    }
+});
+
+pub type Vector<T, const D: usize> = <VectorTypeResolver<T, D> as VectorTypeHolder<T, D>>::Vector;
 
 impl<T, const DIMENSION: usize> VectorLike<T, DIMENSION> for Vector<T, DIMENSION>
 where
@@ -38,70 +156,30 @@ impl<T: VectorElement, const DIMENSION: usize> From<[T; DIMENSION]> for Vector<T
     }
 }
 
-include!("./vector/xyzw_accessor.rs");
+//include!("./vector/xyzw_accessor.rs");
 
-impl<T: VectorElement> Vector<T, 1> {
-    pub fn new(x: T) -> Self {
-        Self { elements: [x] }
-    }
-
-    pub fn unit_x() -> Self {
-        Self {
-            elements: [T::one()],
-        }
-    }
-}
-
-impl<T: VectorElement> Vector<T, 2> {
-    pub fn new(x: T, y: T) -> Self {
-        Self { elements: [x, y] }
-    }
-
-    pub fn unit_x() -> Self {
-        Self {
-            elements: [T::one(), T::zero()],
-        }
-    }
-
-    pub fn unit_y() -> Self {
-        Self {
-            elements: [T::zero(), T::one()],
-        }
-    }
-}
-
-impl<T: VectorElement> Vector<T, 3> {
+impl<T: VectorElement> Vector3<T> {
     pub fn new(x: T, y: T, z: T) -> Self {
-        Self {
-            elements: [x, y, z],
-        }
+        Self { x, y, z }
     }
 
     pub fn unit_x() -> Self {
-        Self {
-            elements: [T::one(), T::zero(), T::zero()],
-        }
+        Self::new(T::one(), T::zero(), T::zero())
     }
 
     pub fn unit_y() -> Self {
-        Self {
-            elements: [T::zero(), T::one(), T::zero()],
-        }
+        Self::new(T::zero(), T::one(), T::zero())
     }
 
     pub fn unit_z() -> Self {
-        Self {
-            elements: [T::zero(), T::zero(), T::one()],
-        }
+        Self::new(T::zero(), T::zero(), T::one())
     }
 
     pub fn corss(&self, other: impl VectorLike<T, 3>) -> Self {
         Self {
-            elements: [
-                *self.get(1) * *other.get(2) - *self.get(2) * *other.get(1),
-                *self.get(2) * *other.get(1) - *self.get(1) * *other.get(2),
-                *self.get(0) * *other.get(1) - *self.get(1) * *other.get(0),
-            ],
+            x: *self.get(1) * *other.get(2) - *self.get(2) * *other.get(1),
+            y: *self.get(2) * *other.get(1) - *self.get(1) * *other.get(2),
+            z: *self.get(0) * *other.get(1) - *self.get(1) * *other.get(0),
         }
     }
 
@@ -112,35 +190,25 @@ impl<T: VectorElement> Vector<T, 3> {
     }
 }
 
-impl<T: VectorElement> Vector<T, 4> {
+impl<T: VectorElement> Vector4<T> {
     pub fn new(x: T, y: T, z: T, w: T) -> Self {
-        Self {
-            elements: [x, y, z, w],
-        }
+        Self { x, y, z, w }
     }
 
     pub fn unit_x() -> Self {
-        Self {
-            elements: [T::one(), T::zero(), T::zero(), T::zero()],
-        }
+        Self::new(T::one(), T::zero(), T::zero(), T::zero())
     }
 
     pub fn unit_y() -> Self {
-        Self {
-            elements: [T::zero(), T::one(), T::zero(), T::zero()],
-        }
+        Self::new(T::zero(), T::one(), T::zero(), T::zero())
     }
 
     pub fn unit_z() -> Self {
-        Self {
-            elements: [T::zero(), T::zero(), T::one(), T::zero()],
-        }
+        Self::new(T::zero(), T::zero(), T::one(), T::zero())
     }
 
     pub fn unit_w() -> Self {
-        Self {
-            elements: [T::zero(), T::zero(), T::zero(), T::one()],
-        }
+        Self::new(T::zero(), T::zero(), T::zero(), T::one())
     }
 }
 
@@ -156,7 +224,7 @@ impl<T: VectorElement, const DIMENSION: usize> Zero for Vector<T, DIMENSION> {
     }
 }
 
-include!("./vector/ops.rs");
+//include!("./vector/ops.rs");
 
 impl<T: VectorElement, const DIMENSION: usize> One for Vector<T, DIMENSION> {
     fn one() -> Self {
@@ -166,7 +234,11 @@ impl<T: VectorElement, const DIMENSION: usize> One for Vector<T, DIMENSION> {
     }
 }
 
-impl<T: VectorElement, const DIMENSION: usize> Vector<T, DIMENSION> {
+/*
+impl<V, T: VectorElement, const DIMENSION: usize> V
+where
+    V: VectorLike<T, DIMENSION>,
+{
     pub fn length_squared(&self) -> T {
         let mut result = T::zero();
         for i in 0..DIMENSION {
@@ -215,6 +287,7 @@ where
         *self = self.normalized();
     }
 }
+*/
 
 pub trait ToVector<T: VectorElement, const DIMENSION: usize> {
     fn to_vector(self) -> Vector<T, DIMENSION>;
@@ -237,11 +310,6 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-
-    type Vector1<T> = Vector<T, 1>;
-    type Vector2<T> = Vector<T, 2>;
-    type Vector3<T> = Vector<T, 3>;
-    type Vector4<T> = Vector<T, 4>;
 
     #[test]
     fn new_vec1() {
@@ -347,3 +415,4 @@ mod test {
         assert_eq!(l.reflect(n), Vector3::new(-1.0, -1.0, 5.0_f64));
     }
 }
+*/

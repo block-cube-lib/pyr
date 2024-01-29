@@ -1,8 +1,8 @@
-pub use crate::math::*;
+use crate::math::*;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Sphere<T: VectorElement> {
-    center: Vector<T, 3>,
+    center: Vector3<T>,
     radius: T,
 }
 
@@ -11,16 +11,16 @@ impl<T: VectorElement> Eq for Sphere<T> where T: Eq {}
 impl<T: VectorElement> Sphere<T> {
     pub fn new(center: impl VectorLike<T, 3>, radius: T) -> Self {
         Self {
-            center: center.to_vector(),
+            center: Vector3::new(center.get(0), center.get(1), center.get(2)),
             radius,
         }
     }
 
-    pub fn center(&self) -> Vector<T, 3> {
+    pub fn center(&self) -> Vector3<T> {
         self.center
     }
 
-    pub fn center_mut(&mut self) -> &mut Vector<T, 3> {
+    pub fn center_mut(&mut self) -> &mut Vector3<T> {
         &mut self.center
     }
 
@@ -36,7 +36,6 @@ impl<T: VectorElement> Sphere<T> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use num::Zero;
 
     type Vector3 = Vector<f64, 3>;
 
@@ -58,7 +57,7 @@ mod test {
     #[test]
     fn center_mut() {
         let mut sphere = Sphere {
-            center: Vector::zero(),
+            center: Vector3::new(0.0, 0.0, 0.0),
             radius: 1.0,
         };
         *sphere.center_mut() = Vector3::new(1.0, 2.0, 3.5);

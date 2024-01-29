@@ -1,5 +1,5 @@
 mod traits;
-
+/*
 pub use self::traits::*;
 use crate::math::vector::*;
 use num::{Float, One, Zero};
@@ -388,3 +388,4 @@ mod test {
         assert_eq!(m, Matrix::identity());
     }
 }
+*/

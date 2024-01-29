@@ -6,6 +6,7 @@ pub use self::matrix::*;
 pub use self::quaternion::Quaternion;
 pub use self::vector::*;
 
+/*
 impl<T: MatrixElement, const ROW: usize, const COL: usize> std::ops::Mul<Matrix<T, ROW, COL>>
     for Vector<T, ROW>
 {
@@ -55,3 +56,4 @@ pub type F32Matrix3 = Matrix<f32, 3, 3>;
 pub type F32Matrix4 = Matrix<f32, 4, 4>;
 pub type F64Matrix3 = Matrix<f64, 3, 3>;
 pub type F64Matrix4 = Matrix<f64, 4, 4>;
+*/

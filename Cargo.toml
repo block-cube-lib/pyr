@@ -4,16 +4,25 @@ version = "0.1.0"
 authors = ["block <block.cube.lib@gmail.com>"]
 edition = "2021"
 
+[workspace]
+members = ["./", "math-derive"]
+default-members = ["./", "math-derive"]
+
+[workspace.dependencies.pyr-math-derive]
+path = "./math-derive"
+
 [dependencies]
-num = "0.2"
+num = "0.4"
 paste = "1.0.7"
 rand = "0.8.4"
+seq-macro = "0.3.3"
 serde = { version = "1.0.136", features = ["derive"] }
+pyr-math-derive = { workspace = true }
 
 [dev-dependencies]
-proptest = "0.8.7"
+proptest = "1.2.0"
 serde_json = "1.0"
-criterion = "0.3"
+criterion = "0.5.1"
 
 [[bench]]
 name = "pyr_benchmark"

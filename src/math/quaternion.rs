@@ -1,12 +1,9 @@
 use num::Float;
+use serde::{Deserialize, Serialize};
 use std::ops;
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
-
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Default)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 pub struct Quaternion<T: Float> {
     pub x: T,
     pub y: T,
