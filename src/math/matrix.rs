@@ -1,37 +1,36 @@
 mod traits;
+
 /*
 pub use self::traits::*;
 use crate::math::vector::*;
-use num::{Float, One, Zero};
+use crate::num::{One, Zero};
+use num::Float;
 use std::ops::*;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Matrix<T: MatrixElement, const ROW: usize, const COL: usize> {
-    pub elements: [Vector<T, COL>; ROW],
+    pub elements: [[T; COL]; ROW],
 }
 
 impl<T, const ROW: usize, const COL: usize> Eq for Matrix<T, ROW, COL> where T: MatrixElement + Eq {}
 
 impl<T: MatrixElement, const ROW: usize, const COL: usize> Default for Matrix<T, ROW, COL> {
     fn default() -> Self {
-        let default_vector = Vector::<T, COL>::default();
         Self {
-            elements: [default_vector; ROW],
+            elements: [[T::default(); COL]; ROW],
         }
     }
 }
 
-impl<T: MatrixElement, const ROW: usize, const COL: usize> Zero for Matrix<T, ROW, COL> {
-    fn zero() -> Self {
-        Self {
-            elements: [Vector::<T, COL>::zero(); ROW],
-        }
-    }
+impl<T: MatrixElement, const ROW: usize, const COL: usize> Matrix<T, ROW, COL> {
+    const ZERO: Self = Self {
+        elements: [[T::ZERO; COL]; ROW],
+    };
 
-    fn is_zero(&self) -> bool {
-        *self == Self::zero()
-    }
+    const ONE: Self = Self {
+        elements: [[T::ONE; COL]; ROW],
+    };
 }
 
 impl<T: MatrixElement, const ROW: usize, const COL: usize> Matrix<T, ROW, COL> {
@@ -190,7 +189,7 @@ impl<T: MatrixElement, const ROW: usize, const COL: usize> Mul<Vector<T, COL>>
 }
 
 impl<T: MatrixElement, const ROW: usize, const COL: usize> Index<usize> for Matrix<T, ROW, COL> {
-    type Output = Vector<T, COL>;
+    type Output = [T; COL];
 
     fn index(&self, index: usize) -> &Self::Output {
         &self.elements[index]
@@ -309,7 +308,7 @@ mod test {
     fn new_from_vector_array() {
         let m1 = Matrix::new([Vector2::new(1, 2), Vector2::new(3, 4), Vector2::new(5, 6)]);
         let m2 = Matrix::<i32, 3, 2> {
-            elements: [[1, 2].to_vector(), [3, 4].to_vector(), [5, 6].to_vector()],
+            elements: [[1, 2], [3, 4], [5, 6]],
         };
         assert_eq!(m1, m2);
     }
@@ -318,7 +317,7 @@ mod test {
     fn new_from_array() {
         let m1 = Matrix::new([[1, 2], [3, 4], [5, 6]]);
         let m2 = Matrix::<i32, 3, 2> {
-            elements: [[1, 2].to_vector(), [3, 4].to_vector(), [5, 6].to_vector()],
+            elements: [[1, 2], [3, 4], [5, 6]],
         };
         assert_eq!(m1, m2);
     }
