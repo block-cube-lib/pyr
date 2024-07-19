@@ -5,6 +5,9 @@ use crate::math::vector::*;
 use num::Float;
 use std::ops::*;
 
+/// Matrix<i32, 2, 3> is a 2 row 3 column matrix of i32.
+/// [[a1, a2, a3]
+///  [b1, b2, b3]]
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Matrix<T: MatrixElement, const ROW: usize, const COL: usize> {
@@ -246,15 +249,15 @@ impl<T: MatrixElement, const ROW: usize, const COL: usize> Mul<Vector<T, COL>>
     }
 }
 */
-impl<T: MatrixElement, const COL: usize> Mul<Vector1<T>>
-    for Matrix<T, 1, COL>
-{
-    type Output = Matrix<T, 1, ROW>;
 
-    fn mul(self, v: Vector<T, COL>) -> Self::Output {
+impl<T: MatrixElement, const COL: usize> Mul<Vector1<T>> for Matrix<T, 1, COL> {
+    type Output = Matrix<T, COL, 1>;
+
+    fn mul(self, v: Vector1<T>) -> Self::Output {
         let mut m = Self::Output::default();
-        for i in 0..ROW {
-            m[i][0] = self.row(i).dot(v);
+        for i in 0..COL {
+            let row = Vector1::from(self.row(i));
+            m[i][0] = row.dot(v);
         }
         m
     }
