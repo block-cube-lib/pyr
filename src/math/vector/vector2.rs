@@ -106,6 +106,18 @@ impl<T: VectorElement + Float> Vector2<T> {
     }
 }
 
+impl<T: VectorElement> From<(T, T)> for Vector2<T> {
+    fn from((x, y): (T, T)) -> Self {
+        Self { x, y }
+    }
+}
+
+impl<T: VectorElement> From<(Vector1<T>, T)> for Vector2<T> {
+    fn from((v, y): (Vector1<T>, T)) -> Self {
+        Self { x: v.x, y }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
