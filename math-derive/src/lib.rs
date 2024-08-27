@@ -293,6 +293,34 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
         };
         token_streams.push(impl_normalize);
     }
+    {
+        // impl distance
+        let calc_sub: proc_macro2::TokenStream = field_names
+            .iter()
+            .enumerate()
+            .map(|(i, name)| quote! { #name: self.#name - rhs.get(#i) })
+            .fold(proc_macro2::TokenStream::new(), |ts, v| {
+                if ts.is_empty() {
+                    v
+                } else {
+                    quote! { #ts, #v }
+                }
+            });
+        let where_clause = if where_clause.is_some() {
+            quote! { #where_clause, where #field_type: num::Float }
+        } else {
+            quote! { where #field_type: num::Float }
+        };
+        let impl_distance = quote! {
+            impl #impl_generics #struct_name #type_generics #where_clause {
+                pub fn distance(&self, rhs: impl VectorLike<#field_type, #dimension>) -> #field_type {
+                    let v =  Self { #calc_sub };
+                    v.length()
+                }
+            }
+        };
+        token_streams.push(impl_distance);
+    }
 
     let expanded = quote! {
         #(#token_streams)*

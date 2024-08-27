@@ -267,4 +267,12 @@ mod test {
             assert!(-std::f32::consts::PI <= angle && angle <= std::f32::consts::PI);
         }
     }
+
+    #[test]
+    fn distance() {
+        let v1 = Vector3::new(1.0_f32, 2.0, 3.0);
+        let v2 = Vector3::new(4.0_f32, 6.0, 8.0);
+        (v1 - v2).length();
+        let _n = v1.distance(v2);
+    }
 }
