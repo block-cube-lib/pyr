@@ -10,3 +10,5 @@ pub trait Color<T: ColorElement> {
     fn b(&self) -> T;
     fn a(&self) -> T;
 }
+
+impl<T> ColorElement for T where T: NumAssign + Clone + Copy + Debug + Default + Zero + One {}
