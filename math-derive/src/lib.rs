@@ -142,6 +142,41 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
         };
         token_streams.push(impl_trait);
     }
+    {
+        // impl scalar * Vector
+        let types = vec![
+            quote! { i8 },
+            quote! { i16 },
+            quote! { i32 },
+            quote! { i64 },
+            quote! { i128 },
+            quote! { isize },
+            quote! { u8 },
+            quote! { u16 },
+            quote! { u32 },
+            quote! { u64 },
+            quote! { u128 },
+            quote! { usize },
+            quote! { f32 },
+            quote! { f64 },
+        ];
+        let mul_scalar_v_collection: Vec<proc_macro2::TokenStream> = types
+            .iter()
+            .map(|t| {
+                quote!(
+                    impl std::ops::Mul<#struct_name<#t>> for #t {
+                        type Output = #struct_name<#t>;
+
+                        fn mul(self, v: #struct_name<#t>) -> Self::Output {
+                            v * self
+                        }
+                    }
+                )
+            }).collect();
+        for mul_scalar_v in mul_scalar_v_collection {
+            token_streams.push(mul_scalar_v);
+        }
+    }
 
     let index_access: Vec<proc_macro2::TokenStream> = field_names
         .iter()
@@ -263,7 +298,7 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
     {
         let zero_elements: Vec<proc_macro2::TokenStream> = field_names
             .iter()
-            .map(|name| quote!{ #name: <#field_type as num::Zero>::zero(), })
+            .map(|name| quote! { #name: <#field_type as num::Zero>::zero(), })
             .collect();
 
         // impl normalize and normalized
