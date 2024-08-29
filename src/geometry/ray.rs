@@ -39,11 +39,11 @@ impl<T: VectorElement> RayCastResult<T> {
         RayCastResult { point, normal, t }
     }
 
-    pub fn point(&self) -> &Vector3<T> {
-        &self.point
+    pub fn point(&self) -> Vector3<T> {
+        self.point
     }
-    pub fn normal(&self) -> &Vector3<T> {
-        &self.normal
+    pub fn normal(&self) -> Vector3<T> {
+        self.normal
     }
     pub fn t(&self) -> &T {
         &self.t
