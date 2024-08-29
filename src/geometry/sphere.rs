@@ -37,7 +37,7 @@ impl<T: VectorElement> Sphere<T> {
 
 impl<T: VectorElement + num::Float + num::FromPrimitive + Zero> RayCast<T> for Sphere<T> {
     fn cast(&self, ray: &Ray<T>) -> Option<RayCastResult<T>> {
-        let four = T::from_f32(2.0)?;
+        let four = T::from_f32(4.0)?;
 
         let oc = self.center() - ray.origin();
         let a = ray.direction().length_squared();
