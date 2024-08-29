@@ -37,13 +37,11 @@ impl<T: VectorElement> Sphere<T> {
 
 impl<T: VectorElement + num::Float + num::FromPrimitive + Zero> RayCast<T> for Sphere<T> {
     fn cast(&self, ray: &Ray<T>) -> Option<RayCastResult<T>> {
-        let four = T::from_f32(4.0)?;
-
         let oc = self.center() - ray.origin();
         let a = ray.direction().length_squared();
         let h = ray.direction().dot(oc);
         let c = oc.length_squared() - self.radius().powi(2);
-        let discriminant = h * h - four * a * c;
+        let discriminant = h * h - a * c;
         if discriminant < T::ZERO {
             None
         } else {
