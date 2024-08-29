@@ -1,4 +1,6 @@
+use crate::geometry::ray::*;
 use crate::math::*;
+use crate::num::Zero;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Sphere<T: VectorElement> {
@@ -30,6 +32,29 @@ impl<T: VectorElement> Sphere<T> {
 
     pub fn radius_mut(&mut self) -> &mut T {
         &mut self.radius
+    }
+}
+
+impl<T: VectorElement + num::Float + num::FromPrimitive + Zero> RayCast<T> for Sphere<T> {
+    fn cast(&self, ray: &Ray<T>) -> Option<RayCastResult<T>> {
+        let four = T::from_f32(2.0)?;
+
+        let oc = self.center() - ray.origin();
+        let a = ray.direction().length_squared();
+        let h = ray.direction().dot(oc);
+        let c = oc.length_squared() - self.radius().powi(2);
+        let discriminant = h * h - four * a * c;
+        if discriminant < T::ZERO {
+            None
+        } else {
+            let t = (h - discriminant.sqrt()) / a;
+            let p = ray.point_at(t);
+            Some(RayCastResult::new(
+                p,
+                (p - self.center()) / self.radius(),
+                t,
+            ))
+        }
     }
 }
 
