@@ -45,8 +45,8 @@ impl<T: VectorElement> RayCastHit<T> {
     pub fn normal(&self) -> Vec3<T> {
         self.normal
     }
-    pub fn t(&self) -> &T {
-        &self.t
+    pub fn t(&self) -> T {
+        self.t
     }
 }
 
