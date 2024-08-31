@@ -7,13 +7,13 @@ use std::fmt;
 /// A 3-dimensional vector.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Vector, Serialize, Deserialize)]
-pub struct Vector3<T: VectorElement> {
+pub struct Vec3<T: VectorElement> {
     pub x: T,
     pub y: T,
     pub z: T,
 }
 
-impl<T: VectorElement> Vector3<T> {
+impl<T: VectorElement> Vec3<T> {
     /// Create a new vector.
     pub const fn new(x: T, y: T, z: T) -> Self {
         Self { x, y, z }
@@ -21,10 +21,10 @@ impl<T: VectorElement> Vector3<T> {
 
     /// Create a new vector from a 1-dimensional vector.
     /// ```
-    /// use pyr::math::vector::{Vector1, Vector3};
-    /// let v1 = Vector1::new(1);
-    /// let v3 = Vector3::from_v1_with_yz(v1, 2, 3);
-    /// assert_eq!(v3, Vector3::new(1, 2, 3));
+    /// use pyr::math::vector::{Vec1, Vec3};
+    /// let v1 = Vec1::new(1);
+    /// let v3 = Vec3::from_v1_with_yz(v1, 2, 3);
+    /// assert_eq!(v3, Vec3::new(1, 2, 3));
     /// ```
     pub fn from_v1_with_yz<V>(v: V, y: T, z: T) -> Self
     where
@@ -35,10 +35,10 @@ impl<T: VectorElement> Vector3<T> {
 
     /// Create a new vector from a 2-dimensional vector.
     /// ```
-    /// use pyr::math::vector::{Vector2, Vector3};
-    /// let v2 = Vector2::new(1, 2);
-    /// let v3 = Vector3::from_v2_with_z(v2, 3);
-    /// assert_eq!(v3, Vector3::new(1, 2, 3));
+    /// use pyr::math::vector::{Vec2, Vec3};
+    /// let v2 = Vec2::new(1, 2);
+    /// let v3 = Vec3::from_v2_with_z(v2, 3);
+    /// assert_eq!(v3, Vec3::new(1, 2, 3));
     /// ```
     pub fn from_v2_with_z<V>(v: V, z: T) -> Self
     where
@@ -52,42 +52,42 @@ impl<T: VectorElement> Vector3<T> {
     }
 }
 
-impl<T: VectorElement> Vector3<T> {
+impl<T: VectorElement> Vec3<T> {
     /// ```
-    /// let zero = pyr::math::Vector3::<i32>::ZERO;
+    /// let zero = pyr::math::Vec3::<i32>::ZERO;
     /// assert_eq!((zero.x, zero.y, zero.z), (0, 0, 0));
     /// ```
     pub const ZERO: Self = Self::new(T::ZERO, T::ZERO, T::ZERO);
 
     /// ```
-    /// let one = pyr::math::Vector3::<i32>::ONE;
+    /// let one = pyr::math::Vec3::<i32>::ONE;
     /// assert_eq!((one.x, one.y, one.z), (1, 1, 1));
     /// ```
     pub const ONE: Self = Self::new(T::ONE, T::ONE, T::ONE);
 
     /// A unit vector pointing along the positive X axis.
     /// ```
-    /// let unit_x = pyr::math::Vector3::<i32>::UNIT_X;
+    /// let unit_x = pyr::math::Vec3::<i32>::UNIT_X;
     /// assert_eq!((unit_x.x, unit_x.y, unit_x.z), (1, 0, 0));
     /// ```
     pub const UNIT_X: Self = Self::new(T::ONE, T::ZERO, T::ZERO);
 
     /// A unit vector pointing along the positive Y axis.
     /// ```
-    /// let unit_y = pyr::math::Vector3::<i32>::UNIT_Y;
+    /// let unit_y = pyr::math::Vec3::<i32>::UNIT_Y;
     /// assert_eq!((unit_y.x, unit_y.y, unit_y.z), (0, 1, 0));
     /// ```
     pub const UNIT_Y: Self = Self::new(T::ZERO, T::ONE, T::ZERO);
 
     /// A unit vector pointing along the positive Z axis.
     /// ```
-    /// let unit_z = pyr::math::Vector3::<i32>::UNIT_Z;
+    /// let unit_z = pyr::math::Vec3::<i32>::UNIT_Z;
     /// assert_eq!((unit_z.x, unit_z.y, unit_z.z), (0, 0, 1));
     /// ```
     pub const UNIT_Z: Self = Self::new(T::ZERO, T::ZERO, T::ONE);
 }
 
-impl<T: VectorElement> VectorLike<T, 3> for Vector3<T> {
+impl<T: VectorElement> VectorLike<T, 3> for Vec3<T> {
     fn get(&self, index: usize) -> T {
         match index {
             0 => self.x,
@@ -107,13 +107,13 @@ impl<T: VectorElement> VectorLike<T, 3> for Vector3<T> {
     }
 }
 
-impl<T: VectorElement + fmt::Display> fmt::Display for Vector3<T> {
+impl<T: VectorElement + fmt::Display> fmt::Display for Vec3<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "[{}, {}, {}]", self.x, self.y, self.z)
     }
 }
 
-impl<T: VectorElement + std::ops::Neg<Output = T>> Vector3<T> {
+impl<T: VectorElement + std::ops::Neg<Output = T>> Vec3<T> {
     /// Get the cross product of two vectors.
     pub fn cross(&self, rhs: impl VectorLike<T, 3>) -> Self {
         Self {
@@ -124,10 +124,10 @@ impl<T: VectorElement + std::ops::Neg<Output = T>> Vector3<T> {
     }
 }
 
-impl<T: VectorElement + Float> Vector3<T> {
+impl<T: VectorElement + Float> Vec3<T> {
     /// Get the angle between two vectors.
     /// Returns the angle in radians.
-    pub fn angle(&self, rhs: Vector3<T>) -> T {
+    pub fn angle(&self, rhs: Vec3<T>) -> T {
         let dot = self.dot(rhs);
         let len = self.length() * rhs.length();
         (dot / len).acos()
@@ -136,7 +136,7 @@ impl<T: VectorElement + Float> Vector3<T> {
     /// Get the angle between two vectors.
     /// Returns the angle in radians.
     /// The sign of the angle is determined by the sign of the cross product.
-    pub fn signed_angle(&self, rhs: Vector3<T>, normal: impl VectorLike<T, 3>) -> T {
+    pub fn signed_angle(&self, rhs: Vec3<T>, normal: impl VectorLike<T, 3>) -> T {
         let angle = self.angle(rhs);
         let cross = self.cross(rhs);
         if cross.dot(normal) < T::zero() {
@@ -146,7 +146,7 @@ impl<T: VectorElement + Float> Vector3<T> {
         }
     }
 
-    pub fn reflect(&self, normal: Vector3<T>) -> Self {
+    pub fn reflect(&self, normal: Vec3<T>) -> Self {
         *self - normal * self.dot(normal) * T::from(2.0).unwrap()
     }
 }
@@ -156,27 +156,27 @@ mod test {
     use super::*;
     use proptest::prelude::*;
 
-    fn gen_vec3<T: VectorElement + Arbitrary>() -> impl Strategy<Value = Vector3<T>> {
-        (any::<T>(), any::<T>(), any::<T>()).prop_map(|(x, y, z)| Vector3::<T>::new(x, y, z))
+    fn gen_vec3<T: VectorElement + Arbitrary>() -> impl Strategy<Value = Vec3<T>> {
+        (any::<T>(), any::<T>(), any::<T>()).prop_map(|(x, y, z)| Vec3::<T>::new(x, y, z))
     }
 
-    fn gen_non_zero_normal_f32_vec3() -> impl Strategy<Value = Vector3<f32>> {
+    fn gen_non_zero_normal_f32_vec3() -> impl Strategy<Value = Vec3<f32>> {
         // 要素が-1000.0から1000.0の間のベクトルを生成する
         (
             -1000.0..1000.0_f32,
             -1000.0..1000.0_f32,
             -1000.0..1000.0_f32,
         )
-            .prop_map(|(x, y, z)| Vector3::<f32>::new(x, y, z))
+            .prop_map(|(x, y, z)| Vec3::<f32>::new(x, y, z))
             .prop_filter("non zero", |v| v.length_squared() > 0.0)
     }
 
-    fn convert<T, U>(v: Vector3<T>) -> Vector3<U>
+    fn convert<T, U>(v: Vec3<T>) -> Vec3<U>
     where
         T: VectorElement + num::cast::AsPrimitive<U>,
         U: VectorElement + 'static,
     {
-        Vector3::<U> {
+        Vec3::<U> {
             x: v.x.as_(),
             y: v.y.as_(),
             z: v.z.as_(),
@@ -186,7 +186,7 @@ mod test {
     proptest! {
         #[test]
         fn new(x in any::<i32>(), y in any::<i32>(), z in any::<i32>()) {
-            let v = Vector3::new(x, y, z);
+            let v = Vec3::new(x, y, z);
             assert_eq!(v.x, x);
             assert_eq!(v.y, y);
             assert_eq!(v.z, z);
@@ -206,22 +206,22 @@ mod test {
         #[test]
         fn cross(v1 in gen_vec3::<i32>(), v2 in gen_vec3()) {
         {
-            let v1 = Vector3::new(1, 0, 0_i64); // x axis
-            let v2 = Vector3::new(0, 1, 0); // y axis
+            let v1 = Vec3::new(1, 0, 0_i64); // x axis
+            let v2 = Vec3::new(0, 1, 0); // y axis
             let v3 = v1.cross(v2);
-            assert_eq!(v3, Vector3::new(0, 0, 1))
+            assert_eq!(v3, Vec3::new(0, 0, 1))
         }
         {
-            let v1 = Vector3::new(0, 1, 0); // y axis
-            let v2 = Vector3::new(0, 0, 1_i64); // z axis
+            let v1 = Vec3::new(0, 1, 0); // y axis
+            let v2 = Vec3::new(0, 0, 1_i64); // z axis
             let v3 = v1.cross(v2);
-            assert_eq!(v3, Vector3::new(1, 0, 0))
+            assert_eq!(v3, Vec3::new(1, 0, 0))
         }
         {
-            let v1 = Vector3::new(0, 0, 1); // z axis
-            let v2 = Vector3::new(1, 0, 0_i64); // z axis
+            let v1 = Vec3::new(0, 0, 1); // z axis
+            let v2 = Vec3::new(1, 0, 0_i64); // z axis
             let v3 = v1.cross(v2);
-            assert_eq!(v3, Vector3::new(0, 1, 0))
+            assert_eq!(v3, Vec3::new(0, 1, 0))
         }
             let v1 = convert::<i32, i64>(v1);
             let v2 = convert::<i32, i64>(v2);
@@ -233,15 +233,15 @@ mod test {
         #[test]
         fn deserialize_i32(x in any::<i32>(), y in any::<i32>(), z in any::<i32>()) {
             let s = format!("{{ \"x\": {}, \"y\": {}, \"z\": {} }}", x, y, z);
-            let v: Vector3::<i32> = serde_json::from_str(&s).unwrap();
-            assert_eq!(v, Vector3::new(x, y, z));
+            let v: Vec3::<i32> = serde_json::from_str(&s).unwrap();
+            assert_eq!(v, Vec3::new(x, y, z));
         }
 
         #[test]
         fn deserialize_f32(x in any::<f32>(), y in any::<f32>(), z in any::<f32>()) {
             let s = format!("{{ \"x\": {}, \"y\": {}, \"z\": {} }}", x, y, z);
-            let v: Vector3::<f32> = serde_json::from_str(&s).unwrap();
-            assert_eq!(v, Vector3::new(x, y, z));
+            let v: Vec3::<f32> = serde_json::from_str(&s).unwrap();
+            assert_eq!(v, Vec3::new(x, y, z));
         }
 
         #[test]
@@ -270,8 +270,8 @@ mod test {
 
     #[test]
     fn distance() {
-        let v1 = Vector3::new(1.0_f32, 2.0, 3.0);
-        let v2 = Vector3::new(4.0_f32, 6.0, 8.0);
+        let v1 = Vec3::new(1.0_f32, 2.0, 3.0);
+        let v2 = Vec3::new(4.0_f32, 6.0, 8.0);
         (v1 - v2).length();
         let _n = v1.distance(v2);
     }

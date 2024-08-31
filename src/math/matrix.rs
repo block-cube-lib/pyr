@@ -1,7 +1,7 @@
 mod traits;
 
 pub use self::traits::*;
-use crate::math::vector::*;
+use crate::math::vec::*;
 use num::Float;
 use std::ops::*;
 
@@ -112,8 +112,8 @@ impl<T: MatrixElement, const ROW: usize, const COL: usize> MatrixLike<T, ROW, CO
 /// assert_eq!(m1, m2);
 /// ```
 /// ```
-/// use pyr::math::{Matrix, Vector2};
-/// let m1 = Matrix::new([Vector2::new(1, 2), Vector2::new(3, 4), Vector2::new(5, 6)]);
+/// use pyr::math::{Matrix, Vec2};
+/// let m1 = Matrix::new([Vec2::new(1, 2), Vec2::new(3, 4), Vec2::new(5, 6)]);
 /// let m2 = Matrix::from([[1, 2], [3, 4], [5, 6]]);
 /// assert_eq!(m1, m2);
 /// ```
@@ -250,13 +250,13 @@ impl<T: MatrixElement, const ROW: usize, const COL: usize> Mul<Vector<T, COL>>
 }
 */
 
-impl<T: MatrixElement, const COL: usize> Mul<Vector1<T>> for Matrix<T, 1, COL> {
+impl<T: MatrixElement, const COL: usize> Mul<Vec1<T>> for Matrix<T, 1, COL> {
     type Output = Matrix<T, COL, 1>;
 
-    fn mul(self, v: Vector1<T>) -> Self::Output {
+    fn mul(self, v: Vec1<T>) -> Self::Output {
         let mut m = Self::Output::default();
         for i in 0..COL {
-            let row = Vector1::from(self.row(i));
+            let row = Vec1::from(self.row(i));
             m[i][0] = row.dot(v);
         }
         m
@@ -380,7 +380,7 @@ mod ops_test {
 mod test {
     use super::*;
     use crate::math::matrix::traits::MatrixLike as _;
-    type Vector2<T> = Vector<T, 2>;
+    type Vec2<T> = Vector<T, 2>;
     type Matrix2<T> = Matrix<T, 2, 2>;
     type Matrix3<T> = Matrix<T, 3, 3>;
 
@@ -394,7 +394,7 @@ mod test {
 
     #[test]
     fn new_from_vector_array() {
-        let m1 = Matrix::new([Vector2::new(1, 2), Vector2::new(3, 4), Vector2::new(5, 6)]);
+        let m1 = Matrix::new([Vec2::new(1, 2), Vec2::new(3, 4), Vec2::new(5, 6)]);
         let m2 = Matrix::<i32, 3, 2> {
             elements: [[1, 2], [3, 4], [5, 6]],
         };
@@ -412,7 +412,7 @@ mod test {
 
     #[test]
     fn from_vector_array() {
-        let m1 = Matrix::from([Vector2::new(1, 2), Vector2::new(3, 4), Vector2::new(5, 6)]);
+        let m1 = Matrix::from([Vec2::new(1, 2), Vec2::new(3, 4), Vec2::new(5, 6)]);
         let m2 = Matrix::<i32, 3, 2> {
             elements: [[1, 2], [3, 4], [5, 6]],
         };

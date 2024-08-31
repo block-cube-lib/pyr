@@ -1,16 +1,16 @@
 mod array_wrapper;
 mod traits;
-mod vector1;
-mod vector2;
-mod vector3;
-mod vector4;
+mod vec1;
+mod vec2;
+mod vec3;
+mod vec4;
 
 pub use array_wrapper::ArrayWrapper;
 pub use traits::{VectorElement, VectorLike};
-pub use vector1::Vector1;
-pub use vector2::Vector2;
-pub use vector3::Vector3;
-pub use vector4::Vector4;
+pub use vec1::Vec1;
+pub use vec2::Vec2;
+pub use vec3::Vec3;
+pub use vec4::Vec4;
 
 #[doc(hidden)]
 pub trait VectorTypeHolder<T: VectorElement, const D: usize> {
@@ -23,16 +23,16 @@ pub struct VectorTypeResolver<T: VectorElement, const D: usize> {
 }
 
 impl<T: VectorElement> VectorTypeHolder<T, 1> for VectorTypeResolver<T, 1> {
-    type Vector = Vector1<T>;
+    type Vector = Vec1<T>;
 }
 impl<T: VectorElement> VectorTypeHolder<T, 2> for VectorTypeResolver<T, 2> {
-    type Vector = Vector2<T>;
+    type Vector = Vec2<T>;
 }
 impl<T: VectorElement> VectorTypeHolder<T, 3> for VectorTypeResolver<T, 3> {
-    type Vector = Vector3<T>;
+    type Vector = Vec3<T>;
 }
 impl<T: VectorElement> VectorTypeHolder<T, 4> for VectorTypeResolver<T, 4> {
-    type Vector = Vector4<T>;
+    type Vector = Vec4<T>;
 }
 
 seq_macro::seq!(N in 5..32 {
@@ -58,10 +58,10 @@ mod test {
     }
 
     fn vector_alias_impl<T: VectorElement>() {
-        assert_eq!(type_name::<Vector1::<T>>(), type_name::<Vector<T, 1>>());
-        assert_eq!(type_name::<Vector2::<T>>(), type_name::<Vector<T, 2>>());
-        assert_eq!(type_name::<Vector3::<T>>(), type_name::<Vector<T, 3>>());
-        assert_eq!(type_name::<Vector4::<T>>(), type_name::<Vector<T, 4>>());
+        assert_eq!(type_name::<Vec1::<T>>(), type_name::<Vector<T, 1>>());
+        assert_eq!(type_name::<Vec2::<T>>(), type_name::<Vector<T, 2>>());
+        assert_eq!(type_name::<Vec3::<T>>(), type_name::<Vector<T, 3>>());
+        assert_eq!(type_name::<Vec4::<T>>(), type_name::<Vector<T, 4>>());
         assert_eq!(
             type_name::<ArrayWrapper::<T, 5>>(),
             type_name::<Vector<T, 5>>()

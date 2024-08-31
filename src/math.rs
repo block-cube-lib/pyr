@@ -1,10 +1,10 @@
 pub mod matrix;
 pub mod quaternion;
-pub mod vector;
+pub mod vec;
 
 pub use self::matrix::*;
 pub use self::quaternion::Quaternion;
-pub use self::vector::*;
+pub use self::vec::*;
 
 /*
 impl<T: MatrixElement, const ROW: usize, const COL: usize> std::ops::Mul<Matrix<T, ROW, COL>>
