@@ -28,15 +28,15 @@ impl <T: VectorElement> Ray<T> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct RayCastResult<T: VectorElement> {
+pub struct RayCastHit<T: VectorElement> {
     point: Vec3<T>,
     normal: Vec3<T>,
     t: T,
 }
 
-impl<T: VectorElement> RayCastResult<T> {
-    pub fn new(point: Vec3<T>, normal: Vec3<T>, t: T) -> RayCastResult<T> {
-        RayCastResult { point, normal, t }
+impl<T: VectorElement> RayCastHit<T> {
+    pub fn new(point: Vec3<T>, normal: Vec3<T>, t: T) -> RayCastHit<T> {
+        RayCastHit { point, normal, t }
     }
 
     pub fn point(&self) -> Vec3<T> {
@@ -51,7 +51,7 @@ impl<T: VectorElement> RayCastResult<T> {
 }
 
 pub trait RayCast<T: VectorElement> {
-    fn cast(&self, ray: &Ray<T>) -> Option<RayCastResult<T>>;
+    fn cast(&self, ray: &Ray<T>) -> Option<RayCastHit<T>>;
 }
 
 #[cfg(test)]

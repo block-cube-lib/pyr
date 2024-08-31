@@ -36,7 +36,7 @@ impl<T: VectorElement> Sphere<T> {
 }
 
 impl<T: VectorElement + num::Float + num::FromPrimitive + Zero> RayCast<T> for Sphere<T> {
-    fn cast(&self, ray: &Ray<T>) -> Option<RayCastResult<T>> {
+    fn cast(&self, ray: &Ray<T>) -> Option<RayCastHit<T>> {
         let oc = self.center() - ray.origin();
         let a = ray.direction().length_squared();
         let h = ray.direction().dot(oc);
@@ -47,7 +47,7 @@ impl<T: VectorElement + num::Float + num::FromPrimitive + Zero> RayCast<T> for S
         } else {
             let t = (h - discriminant.sqrt()) / a;
             let p = ray.point_at(t);
-            Some(RayCastResult::new(
+            Some(RayCastHit::new(
                 p,
                 (p - self.center()) / self.radius(),
                 t,
