@@ -37,14 +37,14 @@ macro_rules! impl_xyzw_accessor {
     };
 
     (dimension $vector_dimension: expr; 1, $function_name: ident, $($index: expr)+) => {
-        impl<T: VectorElement> Vector<T, $vector_dimension> {
+        impl<T: VectorElement> Vec<T, $vector_dimension> {
             pub fn $function_name(&self) -> T {
                 self.elements[$($index)+]
             }
         }
     };
     (dimension $vector_dimension: expr; $return_vector_dimension: expr, $function_name: ident, $($index: expr),+) => {
-        impl<T: VectorElement> Vector<T, $vector_dimension> {
+        impl<T: VectorElement> Vec<T, $vector_dimension> {
             pub fn $function_name(&self) -> Vector<T, $return_vector_dimension> {
                 [
                     $( self.elements[$index] ),+
@@ -398,92 +398,92 @@ impl_xyzw_accessor!(min_vector_dimension 4; 4, zzzw, 2, 2, 2, 3);
 #[cfg(test)]
 mod xyzw_accessor_test {
     use super::*;
-    type Vector1<T> = Vector<T, 1>;
-    type Vector2<T> = Vector<T, 2>;
-    type Vector3<T> = Vector<T, 3>;
-    type Vector4<T> = Vector<T, 4>;
+    type Vec1<T> = Vec<T, 1>;
+    type Vec2<T> = Vec<T, 2>;
+    type Vec3<T> = Vec<T, 3>;
+    type Vec4<T> = Vec<T, 4>;
 
     #[test]
     fn x() {
-        let v = Vector1::new(1);
+        let v = Vec1::new(1);
         assert_eq!(v.x(), 1);
 
-        let v = Vector2::new(1, 2);
+        let v = Vec2::new(1, 2);
         assert_eq!(v.x(), 1);
 
-        let v = Vector3::new(1, 2, 3);
+        let v = Vec3::new(1, 2, 3);
         assert_eq!(v.x(), 1);
 
-        let v = Vector4::new(1, 2, 3, 4);
+        let v = Vec4::new(1, 2, 3, 4);
         assert_eq!(v.x(), 1);
     }
 
     #[test]
     fn xx() {
-        let v = Vector1::new(1);
+        let v = Vec1::new(1);
         assert_eq!(v.xx(), [1, 1].into());
 
-        let v = Vector2::new(1, 2);
+        let v = Vec2::new(1, 2);
         assert_eq!(v.xx(), [1, 1].into());
 
-        let v = Vector3::new(1, 2, 3);
+        let v = Vec3::new(1, 2, 3);
         assert_eq!(v.xx(), [1, 1].into());
 
-        let v = Vector4::new(1, 2, 3, 4);
+        let v = Vec4::new(1, 2, 3, 4);
         assert_eq!(v.xx(), [1, 1].into());
     }
 
     #[test]
     fn xy() {
-        let v = Vector2::new(1, 2);
+        let v = Vec2::new(1, 2);
         assert_eq!(v.xy(), [1, 2].into());
 
-        let v = Vector3::new(1, 2, 3);
+        let v = Vec3::new(1, 2, 3);
         assert_eq!(v.xy(), [1, 2].into());
 
-        let v = Vector4::new(1, 2, 3, 4);
+        let v = Vec4::new(1, 2, 3, 4);
         assert_eq!(v.xy(), [1, 2].into());
     }
 
     #[test]
     fn yx() {
-        let v = Vector2::new(1, 2);
+        let v = Vec2::new(1, 2);
         assert_eq!(v.yx(), [2, 1].into());
 
-        let v = Vector3::new(1, 2, 3);
+        let v = Vec3::new(1, 2, 3);
         assert_eq!(v.yx(), [2, 1].into());
 
-        let v = Vector4::new(1, 2, 3, 4);
+        let v = Vec4::new(1, 2, 3, 4);
         assert_eq!(v.yx(), [2, 1].into());
     }
 
     #[test]
     fn xyz() {
-        let v = Vector3::new(1, 2, 3);
+        let v = Vec3::new(1, 2, 3);
         assert_eq!(v.xyz(), [1, 2, 3].into());
 
-        let v = Vector4::new(1, 2, 3, 4);
+        let v = Vec4::new(1, 2, 3, 4);
         assert_eq!(v.xyz(), [1, 2, 3].into());
     }
 
     #[test]
     fn xzy() {
-        let v = Vector3::new(1, 2, 3);
+        let v = Vec3::new(1, 2, 3);
         assert_eq!(v.xzy(), [1, 3, 2].into());
 
-        let v = Vector4::new(1, 2, 3, 4);
+        let v = Vec4::new(1, 2, 3, 4);
         assert_eq!(v.xzy(), [1, 3, 2].into());
     }
 
     #[test]
     fn xyzw() {
-        let v = Vector4::new(1, 2, 3, 4);
+        let v = Vec4::new(1, 2, 3, 4);
         assert_eq!(v.xyzw(), [1, 2, 3, 4].into());
     }
 
     #[test]
     fn wzyx() {
-        let v = Vector4::new(1, 2, 3, 4);
+        let v = Vec4::new(1, 2, 3, 4);
         assert_eq!(v.wzyx(), [4, 3, 2, 1].into());
     }
 }

@@ -7,10 +7,10 @@ mod vec4;
 
 pub use array_wrapper::ArrayWrapper;
 pub use traits::{VectorElement, VectorLike};
-pub use vec1::Vec1;
-pub use vec2::Vec2;
-pub use vec3::Vec3;
-pub use vec4::Vec4;
+pub use vec1::*;
+pub use vec2::*;
+pub use vec3::*;
+pub use vec4::*;
 
 #[doc(hidden)]
 pub trait VectorTypeHolder<T: VectorElement, const D: usize> {

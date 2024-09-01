@@ -14,7 +14,7 @@ path = "./math-derive"
 [dependencies]
 num = "0.4"
 paste = "1.0.7"
-rand = "0.8.4"
+rand = "0.8.5"
 seq-macro = "0.3.3"
 serde = { version = "1.0.136", features = ["derive"] }
 pyr-math-derive = { workspace = true }
