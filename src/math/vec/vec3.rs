@@ -207,6 +207,44 @@ where
     }
 }
 
+pub struct UniformVec3InUnitSphere<T>
+where
+    T: VectorElement + SampleUniform,
+{
+    uniform: Uniform<T>,
+}
+
+impl<T> UniformVec3InUnitSphere<T>
+where
+    T: VectorElement + SampleUniform + Float,
+{
+    pub fn new() -> Self {
+        let min = T::from(-1.0).unwrap();
+        let max = T::from(1.0).unwrap();
+        Self {
+            uniform: Uniform::new(min, max),
+        }
+    }
+}
+
+impl<T> Distribution<Vec3<T>> for UniformVec3InUnitSphere<T>
+where
+    T: VectorElement + SampleUniform + Float,
+{
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec3<T> {
+        loop {
+            let v = Vec3 {
+                x: self.uniform.sample(rng),
+                y: self.uniform.sample(rng),
+                z: self.uniform.sample(rng),
+            };
+            if v.length_squared() <= T::ONE {
+                break v;
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -355,6 +393,19 @@ mod test {
             assert!(range.contains(&v.x));
             assert!(range.contains(&v.y));
             assert!(range.contains(&v.z));
+            prev = v;
+        }
+    }
+
+    #[test]
+    fn uniform_in_unit_sphere() {
+        let mut rng = rand::thread_rng();
+        let dist = UniformVec3InUnitSphere::new();
+        let mut prev = Vec3::<f32>::ZERO;
+        for _ in 0..1000 {
+            let v: Vec3<f32> = dist.sample(&mut rng);
+            assert_ne!(v, prev);
+            assert!(v.length_squared() <= 1.0);
             prev = v;
         }
     }
