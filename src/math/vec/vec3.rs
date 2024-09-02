@@ -21,7 +21,7 @@ impl<T: VectorElement> Vec3<T> {
 
     /// Create a new vector from a 1-dimensional vector.
     /// ```
-    /// use pyr::math::vector::{Vec1, Vec3};
+    /// use pyr::math::vec::{Vec1, Vec3};
     /// let v1 = Vec1::new(1);
     /// let v3 = Vec3::from_v1_with_yz(v1, 2, 3);
     /// assert_eq!(v3, Vec3::new(1, 2, 3));
@@ -35,7 +35,7 @@ impl<T: VectorElement> Vec3<T> {
 
     /// Create a new vector from a 2-dimensional vector.
     /// ```
-    /// use pyr::math::vector::{Vec2, Vec3};
+    /// use pyr::math::vec::{Vec2, Vec3};
     /// let v2 = Vec2::new(1, 2);
     /// let v3 = Vec3::from_v2_with_z(v2, 3);
     /// assert_eq!(v3, Vec3::new(1, 2, 3));

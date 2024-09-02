@@ -86,7 +86,7 @@ impl<T: VectorElement> VectorLike<T, 4> for Vec4<T> {
 impl<T: VectorElement> Vec4<T> {
     /// Create a new vector from a 1-dimensional vector.
     /// ```
-    /// use pyr::math::vector::{Vec1, Vec4};
+    /// use pyr::math::vec::{Vec1, Vec4};
     /// let v1 = Vec1::new(1);
     /// let v4 = Vec4::from_v1_with_yzw(v1, 2, 3, 4);
     /// assert_eq!(v4, Vec4::new(1, 2, 3, 4));
@@ -102,7 +102,7 @@ impl<T: VectorElement> Vec4<T> {
 
     /// Create a new vector from a 2-dimensional vector.
     /// ```
-    /// use pyr::math::vector::{Vec2, Vec4};
+    /// use pyr::math::vec::{Vec2, Vec4};
     /// let v2 = Vec2::new(1, 2);
     /// let v4 = Vec4::from_v2_with_zw(v2, 3, 4);
     /// assert_eq!(v4, Vec4::new(1, 2, 3, 4));
@@ -118,7 +118,7 @@ impl<T: VectorElement> Vec4<T> {
 
     /// Create a new vector from a 3-dimensional vector.
     /// ```
-    /// use pyr::math::vector::{Vec3, Vec4};
+    /// use pyr::math::vec::{Vec3, Vec4};
     /// let v3 = Vec3::new(1, 2, 3);
     /// let v4 = Vec4::from_v3_with_w(v3, 4);
     /// assert_eq!(v4, Vec4::new(1, 2, 3, 4));
