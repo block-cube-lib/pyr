@@ -289,6 +289,9 @@ where
     type Sampler = UniformVec4<T>;
 }
 
+//
+// UniformVec3InUnitSphere
+//
 pub struct UniformVec3InUnitSphere<T>
 where
     T: VectorElement + SampleUniform,
@@ -296,9 +299,6 @@ where
     uniform: Uniform<T>,
 }
 
-//
-// UniformVec3InUnitSphere
-//
 impl<T> UniformVec3InUnitSphere<T>
 where
     T: VectorElement + SampleUniform + Float,
@@ -422,6 +422,54 @@ where
     }
 }
 
+//
+// UniformOnHemiSphere
+//
+
+/// ```
+/// use pyr::math::{ Vec3, rand::UniformVec3OnHemiSphere };
+/// use rand::distributions::Distribution;
+///
+/// let mut rng = rand::thread_rng();
+/// let uniform = UniformVec3OnHemiSphere::new(Vec3::<f32>::UNIT_Y);
+/// let v = uniform.sample(&mut rng);
+/// assert!(v.y > 0.0);
+/// let length = v.length();
+/// assert!(0.999 < length && length < 1.001);
+/// ```
+pub struct UniformVec3OnHemiSphere<T>
+where
+    T: VectorElement + SampleUniform + Float,
+{
+    normal: Vec3<T>,
+    uniform: UniformUnitVec<T>,
+}
+impl<T> UniformVec3OnHemiSphere<T>
+where
+    T: VectorElement + SampleUniform + Float,
+{
+    pub fn new(normal: Vec3<T>) -> Self {
+        Self {
+            normal,
+            uniform: UniformUnitVec::new(),
+        }
+    }
+}
+
+impl<T> Distribution<Vec3<T>> for UniformVec3OnHemiSphere<T>
+where
+    T: VectorElement + SampleUniform + Float,
+{
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec3<T> {
+        let v: Vec3<T> = self.uniform.sample(rng);
+        if v.dot(self.normal) >= T::ZERO {
+            v
+        } else {
+            -v
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -534,7 +582,11 @@ mod test {
         for _ in 0..1000 {
             let v: Vec2<f32> = uniform.sample(&mut rng);
             let length_squared = v.length_squared();
-            assert!(0.999 < length_squared && length_squared < 1.001, "length_squared: {}", length_squared);
+            assert!(
+                0.999 < length_squared && length_squared < 1.001,
+                "length_squared: {}",
+                length_squared
+            );
         }
     }
 
@@ -545,7 +597,11 @@ mod test {
         for _ in 0..1000 {
             let v: Vec3<f32> = uniform.sample(&mut rng);
             let length_squared = v.length_squared();
-            assert!(0.999 < length_squared && length_squared < 1.001, "length_squared: {}", length_squared);
+            assert!(
+                0.999 < length_squared && length_squared < 1.001,
+                "length_squared: {}",
+                length_squared
+            );
         }
     }
 
@@ -556,7 +612,11 @@ mod test {
         for _ in 0..1000 {
             let v: Vec4<f32> = uniform.sample(&mut rng);
             let length_squared = v.length_squared();
-            assert!(0.999 < length_squared && length_squared < 1.001, "length_squared: {}", length_squared);
+            assert!(
+                0.999 < length_squared && length_squared < 1.001,
+                "length_squared: {}",
+                length_squared
+            );
         }
     }
 }
