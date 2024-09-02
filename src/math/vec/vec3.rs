@@ -1,9 +1,6 @@
 pub use super::traits::{VectorElement, VectorLike};
 use num::Float;
 use pyr_math_derive::Vector;
-use rand::distributions::uniform::SampleUniform;
-use rand::distributions::{Distribution, Standard, Uniform};
-use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -154,97 +151,6 @@ impl<T: VectorElement + Float> Vec3<T> {
     }
 }
 
-impl<T> Distribution<Vec3<T>> for Standard
-where
-    T: VectorElement,
-    Standard: Distribution<T>,
-{
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec3<T> {
-        Vec3 {
-            x: rng.gen(),
-            y: rng.gen(),
-            z: rng.gen(),
-        }
-    }
-}
-
-pub struct UniformVec3<T>
-where
-    T: VectorElement + SampleUniform,
-{
-    x: Uniform<T>,
-    y: Uniform<T>,
-    z: Uniform<T>,
-}
-
-impl<T> UniformVec3<T>
-where
-    T: VectorElement + SampleUniform,
-{
-    pub fn new(
-        x_range: std::ops::Range<T>,
-        y_range: std::ops::Range<T>,
-        z_range: std::ops::Range<T>,
-    ) -> Self {
-        Self {
-            x: Uniform::new(x_range.start, x_range.end),
-            y: Uniform::new(y_range.start, y_range.end),
-            z: Uniform::new(z_range.start, z_range.end),
-        }
-    }
-}
-
-impl<T> Distribution<Vec3<T>> for UniformVec3<T>
-where
-    T: VectorElement + SampleUniform,
-{
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec3<T> {
-        Vec3 {
-            x: self.x.sample(rng),
-            y: self.y.sample(rng),
-            z: self.z.sample(rng),
-        }
-    }
-}
-
-pub struct UniformVec3InUnitSphere<T>
-where
-    T: VectorElement + SampleUniform,
-{
-    uniform: Uniform<T>,
-}
-
-impl<T> UniformVec3InUnitSphere<T>
-where
-    T: VectorElement + SampleUniform + Float,
-{
-    pub fn new() -> Self {
-        let min = T::from(-1.0).unwrap();
-        let max = T::from(1.0).unwrap();
-        Self {
-            uniform: Uniform::new(min, max),
-        }
-    }
-}
-
-impl<T> Distribution<Vec3<T>> for UniformVec3InUnitSphere<T>
-where
-    T: VectorElement + SampleUniform + Float,
-{
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec3<T> {
-        loop {
-            let v = Vec3 {
-                x: self.uniform.sample(rng),
-                y: self.uniform.sample(rng),
-                z: self.uniform.sample(rng),
-            };
-            if v.length_squared() <= T::ONE {
-                break v;
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -368,45 +274,5 @@ mod test {
         let v2 = Vec3::new(4.0_f32, 6.0, 8.0);
         (v1 - v2).length();
         let _n = v1.distance(v2);
-    }
-
-    #[test]
-    fn rand() {
-        let mut rng = rand::thread_rng();
-        let mut prev = Vec3::<i32>::ZERO;
-        for _ in 0..1000 {
-            let v: Vec3<i32> = rng.gen();
-            assert_ne!(v, prev);
-            prev = v;
-        }
-    }
-
-    #[test]
-    fn uniform() {
-        let mut rng = rand::thread_rng();
-        let range = -1000..1000;
-        let dist = UniformVec3::new(range.clone(), range.clone(), range.clone());
-        let mut prev = Vec3::<i32>::ZERO;
-        for _ in 0..1000 {
-            let v: Vec3<i32> = dist.sample(&mut rng);
-            assert_ne!(v, prev);
-            assert!(range.contains(&v.x));
-            assert!(range.contains(&v.y));
-            assert!(range.contains(&v.z));
-            prev = v;
-        }
-    }
-
-    #[test]
-    fn uniform_in_unit_sphere() {
-        let mut rng = rand::thread_rng();
-        let dist = UniformVec3InUnitSphere::new();
-        let mut prev = Vec3::<f32>::ZERO;
-        for _ in 0..1000 {
-            let v: Vec3<f32> = dist.sample(&mut rng);
-            assert_ne!(v, prev);
-            assert!(v.length_squared() <= 1.0);
-            prev = v;
-        }
     }
 }

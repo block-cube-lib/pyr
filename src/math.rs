@@ -1,5 +1,6 @@
 pub mod matrix;
 pub mod quaternion;
+pub mod rand;
 pub mod vec;
 
 pub use self::matrix::*;
