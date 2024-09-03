@@ -473,6 +473,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::num::Zero as _;
 
     #[test]
     fn rand_standard_vec2() {

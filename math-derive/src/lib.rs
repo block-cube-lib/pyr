@@ -239,20 +239,14 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
 
     {
         // impl length_squared
-        let calc_length_squared: proc_macro2::TokenStream = field_names
+        let calc_length_squared: Vec<_>= field_names
             .iter()
             .map(|name| quote! { self.#name * self.#name })
-            .fold(proc_macro2::TokenStream::new(), |ts, v| {
-                if ts.is_empty() {
-                    v
-                } else {
-                    quote! { #ts + #v }
-                }
-            });
+            .collect();
         let impl_length_squared = quote! {
             impl #impl_generics #struct_name #type_generics #where_clause {
                 pub fn length_squared(&self) -> #field_type {
-                    #calc_length_squared
+                    #(#calc_length_squared)+*
                 }
             }
         };
@@ -276,21 +270,15 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
     }
     {
         // impl dot
-        let calc_dot: proc_macro2::TokenStream = field_names
+        let calc_dot: Vec<_> = field_names
             .iter()
             .enumerate()
             .map(|(i, name)| quote! { self.#name * rhs.get(#i) })
-            .fold(proc_macro2::TokenStream::new(), |ts, v| {
-                if ts.is_empty() {
-                    v
-                } else {
-                    quote! { #ts + #v }
-                }
-            });
+            .collect();
         let impl_dot = quote! {
             impl #impl_generics #struct_name #type_generics #where_clause {
                 pub fn dot<V: VectorLike<#field_type, #dimension>>(&self, rhs: V) -> #field_type {
-                    #calc_dot
+                    #(#calc_dot)+*
                 }
             }
         };
@@ -331,17 +319,11 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
     }
     {
         // impl distance
-        let calc_sub: proc_macro2::TokenStream = field_names
+        let calc_sub = field_names
             .iter()
             .enumerate()
             .map(|(i, name)| quote! { #name: self.#name - rhs.get(#i) })
-            .fold(proc_macro2::TokenStream::new(), |ts, v| {
-                if ts.is_empty() {
-                    v
-                } else {
-                    quote! { #ts, #v }
-                }
-            });
+            .collect::<Vec<_>>();
         let where_clause = if where_clause.is_some() {
             quote! { #where_clause, where #field_type: num::Float }
         } else {
@@ -350,7 +332,7 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
         let impl_distance = quote! {
             impl #impl_generics #struct_name #type_generics #where_clause {
                 pub fn distance(&self, rhs: impl VectorLike<#field_type, #dimension>) -> #field_type {
-                    let v =  Self { #calc_sub };
+                    let v =  Self { #(#calc_sub),* };
                     v.length()
                 }
             }
