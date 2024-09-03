@@ -172,7 +172,8 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
                         }
                     }
                 )
-            }).collect();
+            })
+            .collect();
         for mul_scalar_v in mul_scalar_v_collection {
             token_streams.push(mul_scalar_v);
         }
@@ -355,6 +356,40 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
             }
         };
         token_streams.push(impl_distance);
+    }
+    {
+        // impl ONE and ZERO
+        let one_elements: Vec<_> = field_names
+            .iter()
+            .map(|name| quote! { #name: T::ONE })
+            .collect::<Vec<_>>();
+        let zero_elements: Vec<_> = field_names
+            .iter()
+            .map(|name| quote! { #name: T::ZERO })
+            .collect::<Vec<_>>();
+        let is_near_zero_elements: Vec<_> = field_names
+            .iter()
+            .map(|name| quote! { self.#name.is_near_zero() })
+            .collect::<Vec<_>>();
+        // impl ONE and ZERO
+        let impl_one_zero = quote! {
+            impl #impl_generics crate::num::One for #struct_name #type_generics #where_clause {
+                const ONE: Self = Self {
+                    #(#one_elements), *
+                };
+            }
+
+            impl #impl_generics crate::num::Zero for #struct_name #type_generics #where_clause {
+                const ZERO: Self = Self {
+                    #(#zero_elements), *
+                };
+
+                fn is_near_zero(&self) -> bool {
+                    #(#is_near_zero_elements) && *
+                }
+            }
+        };
+        token_streams.push(impl_one_zero);
     }
 
     let expanded = quote! {

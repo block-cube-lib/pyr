@@ -53,18 +53,6 @@ impl<T: VectorElement> Vec3<T> {
 }
 
 impl<T: VectorElement> Vec3<T> {
-    /// ```
-    /// let zero = pyr::math::Vec3::<i32>::ZERO;
-    /// assert_eq!((zero.x, zero.y, zero.z), (0, 0, 0));
-    /// ```
-    pub const ZERO: Self = Self::new(T::ZERO, T::ZERO, T::ZERO);
-
-    /// ```
-    /// let one = pyr::math::Vec3::<i32>::ONE;
-    /// assert_eq!((one.x, one.y, one.z), (1, 1, 1));
-    /// ```
-    pub const ONE: Self = Self::new(T::ONE, T::ONE, T::ONE);
-
     /// A unit vector pointing along the positive X axis.
     /// ```
     /// let unit_x = pyr::math::Vec3::<i32>::UNIT_X;
