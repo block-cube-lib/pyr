@@ -1,4 +1,4 @@
-pub use super::traits::{VectorElement, VectorLike};
+use super::traits::{FloatVectorElement, VectorElement, VectorLike};
 use num::Float;
 use pyr_math_derive::Vector;
 use serde::{Deserialize, Serialize};
@@ -112,7 +112,7 @@ impl<T: VectorElement + std::ops::Neg<Output = T>> Vec3<T> {
     }
 }
 
-impl<T: VectorElement + Float> Vec3<T> {
+impl<T: FloatVectorElement> Vec3<T> {
     /// Get the angle between two vectors.
     /// Returns the angle in radians.
     pub fn angle(&self, rhs: Vec3<T>) -> T {
@@ -258,9 +258,35 @@ mod test {
 
     #[test]
     fn distance() {
-        let v1 = Vec3::new(1.0_f32, 2.0, 3.0);
-        let v2 = Vec3::new(4.0_f32, 6.0, 8.0);
-        (v1 - v2).length();
-        let _n = v1.distance(v2);
+        let v1 = Vec3::new(1.0_f64, 2.0, 3.0);
+        let v2 = Vec3::new(4.0_f64, 6.0, 8.0);
+        let f_distance = v1.distance(v2);
+        assert_eq!(f_distance, (v1 - v2).length());
+        let v1 = Vec3::new(1_u32, 2, 3);
+        let v2 = Vec3::new(4_u32, 6, 8);
+        assert_eq!(v1.distance(v2), f_distance);
+    }
+
+    #[test]
+    fn as_float_vec() {
+        let v = Vec3::new(1, 2, 3);
+        let fv = v.as_float_vec();
+        assert_eq!(fv.x, 1.0);
+        assert_eq!(fv.y, 2.0);
+        assert_eq!(fv.z, 3.0);
+    }
+
+    #[test]
+    fn normalized() {
+        let v = Vec3::new(1.0, 2.0, 3.0);
+        let n = v.normalized();
+        assert_eq!(n.length(), 1.0);
+    }
+
+    #[test]
+    fn normalize() {
+        let mut v = Vec3::new(1.0, 2.0, 3.0);
+        v.normalize();
+        assert_eq!(v.length(), 1.0);
     }
 }

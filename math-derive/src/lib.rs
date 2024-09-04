@@ -236,33 +236,39 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
         };
         token_streams.push(impl_neg);
     }
-
     {
-        // impl length_squared
-        let calc_length_squared: Vec<_>= field_names
+        // as_float_vec
+        let field_cast: Vec<_> = field_names
             .iter()
-            .map(|name| quote! { self.#name * self.#name })
+            .map(|name| quote! { #name: self.#name.as_float_type() })
             .collect();
+        let impl_as_float_vec = quote! {
+            impl #impl_generics #struct_name #type_generics #where_clause {
+                pub fn as_float_vec(&self) -> #struct_name<<#field_type as crate::math::vec::VectorElement>::FloatCalcType> {
+                    #struct_name {
+                        #(#field_cast),*
+                    }
+                }
+            }
+        };
+        token_streams.push(impl_as_float_vec);
+    }
+    {
+        // impl length_squared and length
         let impl_length_squared = quote! {
             impl #impl_generics #struct_name #type_generics #where_clause {
                 pub fn length_squared(&self) -> #field_type {
-                    #(#calc_length_squared)+*
+                    #(self.#field_names * self.#field_names)+*
                 }
             }
         };
         token_streams.push(impl_length_squared);
-    }
-    {
-        // impl length
-        let where_clause = if where_clause.is_some() {
-            quote! { #where_clause, where #field_type: num::Float }
-        } else {
-            quote! { where #field_type: num::Float }
-        };
+
         let impl_length = quote! {
             impl #impl_generics #struct_name #type_generics #where_clause {
-                pub fn length(&self) -> #field_type {
-                    self.length_squared().sqrt()
+                pub fn length(&self) -> <#field_type as VectorElement>::FloatCalcType {
+                    use num::Float as _;
+                    self.as_float_vec().length_squared().sqrt()
                 }
             }
         };
@@ -285,33 +291,37 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
         token_streams.push(impl_dot);
     }
     {
-        let zero_elements: Vec<proc_macro2::TokenStream> = field_names
-            .iter()
-            .map(|name| quote! { #name: <#field_type as num::Zero>::zero(), })
-            .collect();
+        // impl normalized
+        let impl_normalized = quote! {
+            impl #impl_generics #struct_name #type_generics #where_clause {
+                pub fn normalized(&self) -> #struct_name<<#field_type as VectorElement>::FloatCalcType> {
+                    use crate::num::{One, Zero};
+                    let fv = self.as_float_vec();
+                    let len = fv.length();
+                    if len.is_near_zero() {
+                        return #struct_name::ZERO;
+                    }
 
-        // impl normalize and normalized
-        let where_clause = if where_clause.is_some() {
-            quote! { #where_clause, where #field_type: num::Float }
-        } else {
-            quote! { where #field_type: num::Float }
+                    let one_over_len = <T as VectorElement>::FloatCalcType::ONE / len;
+                    fv * one_over_len
+                }
+            }
         };
+        token_streams.push(impl_normalized);
+    }
+    {
+        // impl normalize
+        let additional_where_clause = quote! { where T: crate::math::vec::FloatVectorElement };
+        let where_clause = if where_clause.is_some() {
+            quote! { #where_clause, #additional_where_clause }
+        } else {
+            quote! { #additional_where_clause }
+        };
+
         let impl_normalize = quote! {
             impl #impl_generics #struct_name #type_generics #where_clause {
-                pub fn normalized(&self) -> Self {
-                    let len = self.length();
-                    if len != T::zero() {
-                        let one_over_len = T::one() / len;
-                        *self * one_over_len
-                    } else {
-                        Self {
-                            #(#zero_elements)*
-                        }
-                    }
-                }
-
                 pub fn normalize(&mut self) {
-                    *self = self.normalized()
+                    *self = self.normalized();
                 }
             }
         };
@@ -322,17 +332,12 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
         let calc_sub = field_names
             .iter()
             .enumerate()
-            .map(|(i, name)| quote! { #name: self.#name - rhs.get(#i) })
+            .map(|(i, name)| quote! { #name: self.#name.as_float_type() - rhs.get(#i).as_float_type() })
             .collect::<Vec<_>>();
-        let where_clause = if where_clause.is_some() {
-            quote! { #where_clause, where #field_type: num::Float }
-        } else {
-            quote! { where #field_type: num::Float }
-        };
         let impl_distance = quote! {
             impl #impl_generics #struct_name #type_generics #where_clause {
-                pub fn distance(&self, rhs: impl VectorLike<#field_type, #dimension>) -> #field_type {
-                    let v =  Self { #(#calc_sub),* };
+                pub fn distance(&self, rhs: impl VectorLike<#field_type, #dimension>) -> <#field_type as VectorElement>::FloatCalcType {
+                    let v = #struct_name { #(#calc_sub),* };
                     v.length()
                 }
             }
@@ -340,7 +345,7 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
         token_streams.push(impl_distance);
     }
     {
-        // impl ONE and ZERO
+        // impl One and Zero
         let one_elements: Vec<_> = field_names
             .iter()
             .map(|name| quote! { #name: T::ONE })
@@ -353,7 +358,6 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
             .iter()
             .map(|name| quote! { self.#name.is_near_zero() })
             .collect::<Vec<_>>();
-        // impl ONE and ZERO
         let impl_one_zero = quote! {
             impl #impl_generics crate::num::One for #struct_name #type_generics #where_clause {
                 const ONE: Self = Self {

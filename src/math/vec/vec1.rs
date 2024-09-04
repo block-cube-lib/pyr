@@ -1,5 +1,5 @@
+use super::traits::{VectorElement, VectorLike};
 use crate::math::vec::array_wrapper::ArrayWrapper;
-use crate::math::vec::{VectorElement, VectorLike};
 use num::{One, Zero};
 use pyr_math_derive::Vector;
 use serde::{Deserialize, Serialize};

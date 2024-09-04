@@ -1,5 +1,5 @@
-pub use super::traits::{VectorElement, VectorLike};
-pub use super::vec1::Vec1;
+use super::traits::{FloatVectorElement, VectorElement, VectorLike};
+use super::vec1::Vec1;
 use num::{Float, One, Zero};
 use pyr_math_derive::Vector;
 use serde::{Deserialize, Serialize};
@@ -84,7 +84,7 @@ impl<T: VectorElement> Vec2<T> {
     }
 }
 
-impl<T: VectorElement + Float> Vec2<T> {
+impl<T: FloatVectorElement> Vec2<T> {
     pub fn angle(&self, rhs: Vec2<T>) -> T {
         let dot = self.dot(rhs);
         let len = self.length() * rhs.length();
@@ -94,7 +94,7 @@ impl<T: VectorElement + Float> Vec2<T> {
     pub fn signed_angle(&self, rhs: Vec2<T>) -> T {
         let angle = self.angle(rhs);
         let cross = self.cross(rhs);
-        if cross < T::zero() {
+        if cross < T::ZERO {
             -angle
         } else {
             angle

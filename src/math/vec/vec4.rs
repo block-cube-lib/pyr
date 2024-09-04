@@ -1,4 +1,4 @@
-pub use super::traits::{VectorElement, VectorLike};
+use super::traits::{VectorElement, VectorLike};
 use pyr_math_derive::Vector;
 use serde::{Deserialize, Serialize};
 

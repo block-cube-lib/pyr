@@ -22,7 +22,7 @@ macro_rules! impl_one {
 macro_rules! impl_zero {
     ($type: ty, integer) => {
         impl Zero for $type {
-            const ZERO: Self = 0u8 as $type;
+            const ZERO: Self = 0;
 
             fn is_near_zero(&self) -> bool {
                 *self == 0

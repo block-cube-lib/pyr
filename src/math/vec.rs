@@ -6,7 +6,7 @@ mod vec3;
 mod vec4;
 
 pub use array_wrapper::ArrayWrapper;
-pub use traits::{VectorElement, VectorLike};
+pub use traits::{FloatVectorElement, VectorElement, VectorLike};
 pub use vec1::*;
 pub use vec2::*;
 pub use vec3::*;

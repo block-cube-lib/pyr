@@ -366,7 +366,7 @@ where
 
 impl<T> Distribution<Vec2<T>> for UniformUnitVec<T>
 where
-    T: VectorElement + SampleUniform + Float,
+    T: FloatVectorElement + SampleUniform,
 {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec2<T> {
         loop {
@@ -385,7 +385,7 @@ where
 
 impl<T> Distribution<Vec3<T>> for UniformUnitVec<T>
 where
-    T: VectorElement + SampleUniform + Float,
+    T: FloatVectorElement + SampleUniform,
 {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec3<T> {
         loop {
@@ -404,7 +404,7 @@ where
 
 impl<T> Distribution<Vec4<T>> for UniformUnitVec<T>
 where
-    T: VectorElement + SampleUniform + Float,
+    T: FloatVectorElement + SampleUniform,
 {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec4<T> {
         loop {
@@ -458,7 +458,7 @@ where
 
 impl<T> Distribution<Vec3<T>> for UniformVec3OnHemiSphere<T>
 where
-    T: VectorElement + SampleUniform + Float,
+    T: FloatVectorElement + SampleUniform + Float,
 {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec3<T> {
         let v: Vec3<T> = self.uniform.sample(rng);
@@ -473,7 +473,7 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::num::Zero as _;
+    use crate::num::Zero;
 
     #[test]
     fn rand_standard_vec2() {
@@ -489,7 +489,7 @@ mod test {
     #[test]
     fn rand_standard_vec3() {
         let mut rng = rand::thread_rng();
-        let mut prev = Vec3::<i32>::ZERO;
+        let mut prev = <Vec3<i32> as Zero>::ZERO;
         for _ in 0..1000 {
             let v: Vec3<i32> = rng.gen();
             assert_ne!(v, prev);

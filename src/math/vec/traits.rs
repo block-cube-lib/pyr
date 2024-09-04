@@ -3,13 +3,20 @@ use seq_macro::seq;
 
 /// A trait that defines the requirements for the type of vector elements.
 pub trait VectorElement:
-    Num + NumAssignOps<Self> + Clone + Copy + std::fmt::Debug + Default + crate::num::One + crate::num::Zero
+    Num
+    + NumAssignOps<Self>
+    + Clone
+    + Copy
+    + std::fmt::Debug
+    + Default
+    + crate::num::One
+    + crate::num::Zero
 {
+    type FloatCalcType: FloatVectorElement;
+    fn as_float_type(&self) -> Self::FloatCalcType;
 }
 
-impl<T> VectorElement for T where
-    T: Num + NumAssignOps<Self> + Clone + Copy + std::fmt::Debug + Default + crate::num::One + crate::num::Zero
-{
+pub trait FloatVectorElement: VectorElement<FloatCalcType = Self> + num::Float {
 }
 
 /// A trait for types that can act like a vector.
@@ -28,6 +35,35 @@ impl<T: VectorElement, const DIMENSION: usize> VectorLike<T, DIMENSION> for [T; 
         (*self)[index] = value;
     }
 }
+
+#[doc(hidden)]
+macro_rules! impl_vector_element {
+    ($type: ty, $f: ty) => {
+        impl VectorElement for $type {
+            type FloatCalcType = $f;
+
+            fn as_float_type(&self) -> Self::FloatCalcType {
+                *self as $f
+            }
+        }
+    };
+}
+impl_vector_element!(f32, f32);
+impl_vector_element!(f64, f64);
+impl_vector_element!(i8, f64);
+impl_vector_element!(i16, f64);
+impl_vector_element!(i32, f64);
+impl_vector_element!(i64, f64);
+impl_vector_element!(i128, f64);
+impl_vector_element!(u8, f64);
+impl_vector_element!(u16, f64);
+impl_vector_element!(u32, f64);
+impl_vector_element!(u64, f64);
+impl_vector_element!(u128, f64);
+impl_vector_element!(isize, f64);
+impl_vector_element!(usize, f64);
+impl FloatVectorElement for f32 {}
+impl FloatVectorElement for f64 {}
 
 #[doc(hidden)]
 macro_rules! impl_vector_like_for_tuple {
