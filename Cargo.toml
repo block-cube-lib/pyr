@@ -27,3 +27,8 @@ criterion = "0.5.1"
 [[bench]]
 name = "pyr_benchmark"
 harness = false
+
+[features]
+default = ["left_handed_coordinates"]
+right_handed_coordinates = []
+left_handed_coordinates = []

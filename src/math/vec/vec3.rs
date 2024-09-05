@@ -104,19 +104,31 @@ impl<T: VectorElement + fmt::Display> fmt::Display for Vec3<T> {
 impl<T: VectorElement + std::ops::Neg<Output = T>> Vec3<T> {
     /// Get the cross product of two vectors.
     pub fn cross(&self, rhs: impl VectorLike<T, 3>) -> Self {
-        Self {
-            x: self.get(1) * rhs.get(2) - self.get(2) * rhs.get(1),
-            y: -(self.get(0) * rhs.get(2) - self.get(2) * rhs.get(0)),
-            z: self.get(0) * rhs.get(1) - self.get(1) * rhs.get(0),
+        #[cfg(feature = "right_handed_coordinates")]
+        {
+            Self {
+                x: self.get(1) * rhs.get(2) - self.get(2) * rhs.get(1),
+                y: self.get(2) * rhs.get(0) - self.get(0) * rhs.get(2),
+                z: self.get(0) * rhs.get(1) - self.get(1) * rhs.get(0),
+            }
+        }
+        #[cfg(feature = "left_handed_coordinates")]
+        {
+            Self {
+                x: self.get(2) * rhs.get(1) - self.get(1) * rhs.get(2),
+                y: self.get(0) * rhs.get(2) - self.get(2) * rhs.get(0),
+                z: self.get(1) * rhs.get(0) - self.get(0) * rhs.get(1),
+            }
         }
     }
 }
 
-impl<T: FloatVectorElement> Vec3<T> {
+impl<T: VectorElement> Vec3<T> {
     /// Get the angle between two vectors.
     /// Returns the angle in radians.
-    pub fn angle(&self, rhs: Vec3<T>) -> T {
-        let dot = self.dot(rhs);
+    pub fn angle(&self, rhs: impl VectorLike<T, 3>) -> <T as VectorElement>::FloatCalcType {
+        let rhs = Vec3::<T>::new(rhs.get(0), rhs.get(1), rhs.get(2)).as_float_vec();
+        let dot = self.as_float_vec().dot(rhs);
         let len = self.length() * rhs.length();
         (dot / len).acos()
     }
@@ -124,18 +136,31 @@ impl<T: FloatVectorElement> Vec3<T> {
     /// Get the angle between two vectors.
     /// Returns the angle in radians.
     /// The sign of the angle is determined by the sign of the cross product.
-    pub fn signed_angle(&self, rhs: Vec3<T>, normal: impl VectorLike<T, 3>) -> T {
-        let angle = self.angle(rhs);
-        let cross = self.cross(rhs);
-        if cross.dot(normal) < T::zero() {
+    pub fn signed_angle(
+        &self,
+        rhs: impl VectorLike<T, 3>,
+        normal: impl VectorLike<T, 3>,
+    ) -> <T as VectorElement>::FloatCalcType {
+        use crate::num::Zero as _;
+        let rhs = Vec3::<T>::new(rhs.get(0), rhs.get(1), rhs.get(2)).as_float_vec();
+        let lhs = self.as_float_vec();
+        let angle = lhs.angle(rhs);
+        let cross = lhs.cross(rhs);
+        let normal = Vec3::<T>::new(normal.get(0), normal.get(1), normal.get(2)).as_float_vec();
+        if cross.dot(normal) < <T as VectorElement>::FloatCalcType::ZERO {
             -angle
         } else {
             angle
         }
     }
 
-    pub fn reflect(&self, normal: Vec3<T>) -> Self {
-        *self - normal * self.dot(normal) * T::from(2.0).unwrap()
+    pub fn reflect(&self, normal: Vec3<T>) -> Vec3<<T as VectorElement>::FloatCalcType> {
+        use crate::num::One as _;
+        let two: <T as VectorElement>::FloatCalcType =
+            <T as VectorElement>::FloatCalcType::ONE + <T as VectorElement>::FloatCalcType::ONE;
+        let v = self.as_float_vec();
+        let normal = normal.normalized();
+        v - normal * v.dot(normal) * two
     }
 }
 
@@ -191,6 +216,7 @@ mod test {
             assert_eq!(s, format!("[{}, {}, {}]", v.x, v.y, v.z));
         }
 
+        #[cfg(feature = "right_handed_coordinates")]
         #[test]
         fn cross(v1 in gen_vec3::<i32>(), v2 in gen_vec3()) {
         {
@@ -210,6 +236,34 @@ mod test {
             let v2 = Vec3::new(1, 0, 0_i64); // z axis
             let v3 = v1.cross(v2);
             assert_eq!(v3, Vec3::new(0, 1, 0))
+        }
+            let v1 = convert::<i32, i64>(v1);
+            let v2 = convert::<i32, i64>(v2);
+            let c1 = v1.cross(v2);
+            let c2 = v2.cross(v1);
+            assert_eq!(c1, -c2)
+        }
+
+        #[cfg(feature = "left_handed_coordinates")]
+        #[test]
+        fn cross(v1 in gen_vec3::<i32>(), v2 in gen_vec3()) {
+        {
+            let v1 = Vec3::new(1, 0, 0_i64); // x axis
+            let v2 = Vec3::new(0, 1, 0); // y axis
+            let v3 = v1.cross(v2);
+            assert_eq!(v3, Vec3::new(0, 0, -1))
+        }
+        {
+            let v1 = Vec3::new(0, 1, 0); // y axis
+            let v2 = Vec3::new(0, 0, 1_i64); // z axis
+            let v3 = v1.cross(v2);
+            assert_eq!(v3, Vec3::new(-1, 0, 0))
+        }
+        {
+            let v1 = Vec3::new(0, 0, 1); // z axis
+            let v2 = Vec3::new(1, 0, 0_i64); // z axis
+            let v3 = v1.cross(v2);
+            assert_eq!(v3, Vec3::new(0, -1, 0))
         }
             let v1 = convert::<i32, i64>(v1);
             let v2 = convert::<i32, i64>(v2);
