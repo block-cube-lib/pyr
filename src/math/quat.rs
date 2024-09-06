@@ -4,14 +4,14 @@ use std::ops;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
-pub struct Quaternion<T: Float> {
+pub struct Quat<T: Float> {
     pub x: T,
     pub y: T,
     pub z: T,
     pub w: T,
 }
 
-impl<T: Float> ops::Index<usize> for Quaternion<T> {
+impl<T: Float> ops::Index<usize> for Quat<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -25,7 +25,7 @@ impl<T: Float> ops::Index<usize> for Quaternion<T> {
     }
 }
 
-impl<T: Float> ops::IndexMut<usize> for Quaternion<T> {
+impl<T: Float> ops::IndexMut<usize> for Quat<T> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         match index {
             0 => &mut self.x,

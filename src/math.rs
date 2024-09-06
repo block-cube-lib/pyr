@@ -1,10 +1,10 @@
 pub mod matrix;
-pub mod quaternion;
+pub mod quat;
 pub mod rand;
 pub mod vec;
 
 pub use self::matrix::*;
-pub use self::quaternion::Quaternion;
+pub use self::quat::Quat;
 pub use self::vec::*;
 
 /*
