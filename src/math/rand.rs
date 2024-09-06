@@ -312,6 +312,15 @@ where
     }
 }
 
+impl<T> Default for UniformVec3InUnitSphere<T>
+where
+    T: VectorElement + SampleUniform + Float,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> Distribution<Vec3<T>> for UniformVec3InUnitSphere<T>
 where
     T: VectorElement + SampleUniform + Float,
@@ -350,6 +359,15 @@ where
         Self {
             uniform: Uniform::new(min, max),
         }
+    }
+}
+
+impl<T> Default for UniformUnitVec<T>
+where
+    T: VectorElement + SampleUniform + Float,
+{
+    fn default() -> Self {
+        Self::new()
     }
 }
 

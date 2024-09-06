@@ -75,6 +75,7 @@ macro_rules! impl_new {
         impl<T: VectorElement> ArrayWrapper<T, $dim> {
             seq!(n in 0..$dim {
                 paste! {
+                    #[allow(clippy::too_many_arguments)]
                     pub const fn new( #( [<element_ n>]: T,)*) -> Self {
                         Self {
                             elements: [ #( [<element_ n>],)* ],
@@ -193,7 +194,7 @@ macro_rules! impl_ops_scalar_trait_for_array_wrapper {
 }
 
 impl_ops_scalar_trait_for_array_wrapper!(Mul, mul, *);
-impl_ops_scalar_trait_for_array_wrapper!(Div, div, *);
+impl_ops_scalar_trait_for_array_wrapper!(Div, div, /);
 
 impl<T: VectorElement + Neg<Output = T>, const N: usize> Neg for ArrayWrapper<T, N> {
     type Output = Self;
