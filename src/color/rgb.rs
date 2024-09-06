@@ -242,13 +242,12 @@ impl<T: ColorElement + VectorElement> From<Vec3<T>> for Rgb<T> {
     }
 }
 
-impl<T: ColorElement> From<Rgb<T>> for Rgba<T> {
-    fn from(rgb: Rgb<T>) -> Self {
-        Rgba {
+impl<T: ColorElement> From<Rgba<T>> for Rgb<T> {
+    fn from(rgb: Rgba<T>) -> Self {
+        Rgb {
             r: rgb.r,
             g: rgb.g,
             b: rgb.b,
-            a: T::LDR_MAX,
         }
     }
 }
