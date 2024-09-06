@@ -17,21 +17,3 @@ impl<T: ColorElement> Rgba<T> {
 }
 
 impl<T: ColorElement + Eq> Eq for Rgba<T> where T: Eq {}
-
-impl<T: ColorElement> Color<T> for Rgba<T> {
-    fn r(&self) -> T {
-        self.r
-    }
-
-    fn g(&self) -> T {
-        self.g
-    }
-
-    fn b(&self) -> T {
-        self.b
-    }
-
-    fn a(&self) -> T {
-        self.a
-    }
-}
