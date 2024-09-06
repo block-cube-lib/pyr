@@ -1,60 +1,22 @@
-pub mod matrix;
+pub mod mat;
 pub mod quat;
 pub mod rand;
 pub mod vec;
 
-pub use self::matrix::*;
+pub use self::mat::*;
 pub use self::quat::Quat;
 pub use self::vec::*;
 
-/*
-impl<T: MatrixElement, const ROW: usize, const COL: usize> std::ops::Mul<Matrix<T, ROW, COL>>
-    for Vector<T, ROW>
-{
-    type Output = Vector<T, COL>;
+pub type F32Vec1 = vec::Vec<f32, 1>;
+pub type F32Vec2 = vec::Vec<f32, 2>;
+pub type F32Vec3 = vec::Vec<f32, 3>;
+pub type F32Vec4 = vec::Vec<f32, 4>;
+pub type I32Vec1 = vec::Vec<f64, 1>;
+pub type I32Vec2 = vec::Vec<f64, 2>;
+pub type I32Vec3 = vec::Vec<f64, 3>;
+pub type I32Vec4 = vec::Vec<f64, 4>;
 
-    fn mul(self, m: Matrix<T, ROW, COL>) -> Self::Output {
-        let mut ret = Self::Output::default();
-        for i in 0..COL {
-            ret[i] = self.dot(m.col(i));
-        }
-        ret
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn mul_vector_matrix() {
-        let v: Vector<i32, 3> = [3, 4, 5].into();
-        let m: Matrix<i32, 3, 2> = [[1, 2], [3, 4], [5, 6]].into();
-        assert_eq!(v * m, [40, 52].into());
-    }
-
-    #[test]
-    fn rotate_2x2() {
-        let m = Matrix::<f64, 2, 2>::rotate(45.0_f64.to_radians());
-        let v = Vector::<f64, 2>::unit_y();
-        let rot_v = v * m;
-        let result = Vector::<f64, 2>::new(-1.0, 1.0).normalized();
-        assert!((rot_v.x() - result.x()).abs() < 1.0e-10);
-        assert!((rot_v.y() - result.y()).abs() < 1.0e-10);
-    }
-}
-
-pub type F32Vector1 = Vector<f32, 1>;
-pub type F32Vector2 = Vector<f32, 2>;
-pub type F32Vector3 = Vector<f32, 3>;
-pub type F32Vector4 = Vector<f32, 4>;
-pub type F64Vector1 = Vector<f64, 1>;
-pub type F64Vector2 = Vector<f64, 2>;
-pub type F64Vector3 = Vector<f64, 3>;
-pub type F64Vector4 = Vector<f64, 4>;
-
-pub type F32Matrix3 = Matrix<f32, 3, 3>;
-pub type F32Matrix4 = Matrix<f32, 4, 4>;
-pub type F64Matrix3 = Matrix<f64, 3, 3>;
-pub type F64Matrix4 = Matrix<f64, 4, 4>;
-*/
+//pub type F32Matrix3 = Matrix<f32, 3, 3>;
+//pub type F32Matrix4 = Matrix<f32, 4, 4>;
+//pub type F64Matrix3 = Matrix<f64, 3, 3>;
+//pub type F64Matrix4 = Matrix<f64, 4, 4>;

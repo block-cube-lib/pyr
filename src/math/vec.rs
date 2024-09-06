@@ -13,8 +13,8 @@ pub use vec3::*;
 pub use vec4::*;
 
 #[doc(hidden)]
-pub trait VectorTypeHolder<T: VectorElement, const D: usize> {
-    type Vector;
+pub trait VecTypeHolder<T: VectorElement, const D: usize> {
+    type Vec;
 }
 
 #[doc(hidden)]
@@ -22,27 +22,27 @@ pub struct VectorTypeResolver<T: VectorElement, const D: usize> {
     _marker: std::marker::PhantomData<fn() -> [T; D]>,
 }
 
-impl<T: VectorElement> VectorTypeHolder<T, 1> for VectorTypeResolver<T, 1> {
-    type Vector = Vec1<T>;
+impl<T: VectorElement> VecTypeHolder<T, 1> for VectorTypeResolver<T, 1> {
+    type Vec = Vec1<T>;
 }
-impl<T: VectorElement> VectorTypeHolder<T, 2> for VectorTypeResolver<T, 2> {
-    type Vector = Vec2<T>;
+impl<T: VectorElement> VecTypeHolder<T, 2> for VectorTypeResolver<T, 2> {
+    type Vec = Vec2<T>;
 }
-impl<T: VectorElement> VectorTypeHolder<T, 3> for VectorTypeResolver<T, 3> {
-    type Vector = Vec3<T>;
+impl<T: VectorElement> VecTypeHolder<T, 3> for VectorTypeResolver<T, 3> {
+    type Vec = Vec3<T>;
 }
-impl<T: VectorElement> VectorTypeHolder<T, 4> for VectorTypeResolver<T, 4> {
-    type Vector = Vec4<T>;
+impl<T: VectorElement> VecTypeHolder<T, 4> for VectorTypeResolver<T, 4> {
+    type Vec = Vec4<T>;
 }
 
 seq_macro::seq!(N in 5..32 {
-    impl<T: VectorElement> VectorTypeHolder<T, N> for VectorTypeResolver<T, N> {
-        type Vector = ArrayWrapper<T, N>;
+    impl<T: VectorElement> VecTypeHolder<T, N> for VectorTypeResolver<T, N> {
+        type Vec = ArrayWrapper<T, N>;
     }
 });
 
 /// Vector type. T: Type of the element. D: Dimension. D must be in the range of 1 to 32.
-pub type Vector<T, const D: usize> = <VectorTypeResolver<T, D> as VectorTypeHolder<T, D>>::Vector;
+pub type Vec<T, const D: usize> = <VectorTypeResolver<T, D> as VecTypeHolder<T, D>>::Vec;
 
 #[cfg(test)]
 mod test {
@@ -58,25 +58,25 @@ mod test {
     }
 
     fn vector_alias_impl<T: VectorElement>() {
-        assert_eq!(type_name::<Vec1::<T>>(), type_name::<Vector<T, 1>>());
-        assert_eq!(type_name::<Vec2::<T>>(), type_name::<Vector<T, 2>>());
-        assert_eq!(type_name::<Vec3::<T>>(), type_name::<Vector<T, 3>>());
-        assert_eq!(type_name::<Vec4::<T>>(), type_name::<Vector<T, 4>>());
+        assert_eq!(type_name::<Vec1::<T>>(), type_name::<Vec<T, 1>>());
+        assert_eq!(type_name::<Vec2::<T>>(), type_name::<Vec<T, 2>>());
+        assert_eq!(type_name::<Vec3::<T>>(), type_name::<Vec<T, 3>>());
+        assert_eq!(type_name::<Vec4::<T>>(), type_name::<Vec<T, 4>>());
         assert_eq!(
             type_name::<ArrayWrapper::<T, 5>>(),
-            type_name::<Vector<T, 5>>()
+            type_name::<Vec<T, 5>>()
         );
         assert_eq!(
             type_name::<ArrayWrapper::<T, 6>>(),
-            type_name::<Vector<T, 6>>()
+            type_name::<Vec<T, 6>>()
         );
         assert_eq!(
             type_name::<ArrayWrapper::<T, 7>>(),
-            type_name::<Vector<T, 7>>()
+            type_name::<Vec<T, 7>>()
         );
         assert_eq!(
             type_name::<ArrayWrapper::<T, 8>>(),
-            type_name::<Vector<T, 8>>()
+            type_name::<Vec<T, 8>>()
         );
     }
 }
