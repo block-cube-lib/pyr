@@ -1,4 +1,4 @@
-use super::traits::{FloatVectorElement, VectorElement, VectorLike};
+use super::traits::{VectorElement, VectorLike};
 use num::Float;
 use pyr_math_derive::Vector;
 use serde::{Deserialize, Serialize};

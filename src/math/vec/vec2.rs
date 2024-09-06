@@ -1,6 +1,5 @@
 use super::traits::{FloatVectorElement, VectorElement, VectorLike};
 use super::vec1::Vec1;
-use num::{Float, One, Zero};
 use pyr_math_derive::Vector;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -27,28 +26,6 @@ impl<T: VectorElement> Vec2<T> {
     pub fn unit_y() -> Self {
         Self {
             x: T::zero(),
-            y: T::one(),
-        }
-    }
-}
-
-impl<T: VectorElement> Zero for Vec2<T> {
-    fn zero() -> Self {
-        Self {
-            x: T::zero(),
-            y: T::zero(),
-        }
-    }
-
-    fn is_zero(&self) -> bool {
-        *self == Self::zero()
-    }
-}
-
-impl<T: VectorElement> One for Vec2<T> {
-    fn one() -> Self {
-        Self {
-            x: T::one(),
             y: T::one(),
         }
     }
