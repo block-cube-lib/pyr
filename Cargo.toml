@@ -25,7 +25,7 @@ serde_json = "1.0"
 criterion = "0.5.1"
 
 [[bench]]
-name = "pyr_benchmark"
+name = "benchmark"
 harness = false
 
 [features]
