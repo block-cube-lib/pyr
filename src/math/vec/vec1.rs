@@ -22,7 +22,9 @@ impl<T: VectorElement> Vec1<T> {
     pub const UNIT_X: Self = Self::new(T::ONE);
 }
 
-impl<T: VectorElement> VectorLike<T, 1> for Vec1<T> {
+impl<T: VectorElement> VectorLike<1> for Vec1<T> {
+    type ElementType = T;
+
     fn get(&self, index: usize) -> T {
         match index {
             0 => self.x,
@@ -35,6 +37,17 @@ impl<T: VectorElement> VectorLike<T, 1> for Vec1<T> {
             0 => self.x = value,
             _ => panic!("out of range"),
         }
+    }
+
+    fn from_array(array: [T; 1]) -> Self {
+        Self::new(array[0])
+    }
+    fn into_array(self) -> [T; 1] {
+        [self.x]
+    }
+
+    fn into_float_array(self) -> [T::FloatCalcType; 1] {
+        [self.x.as_float_type()]
     }
 }
 

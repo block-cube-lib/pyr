@@ -283,7 +283,7 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
             .collect();
         let impl_dot = quote! {
             impl #impl_generics #struct_name #type_generics #where_clause {
-                pub fn dot<V: VectorLike<#field_type, #dimension>>(&self, rhs: V) -> #field_type {
+                pub fn dot(&self, rhs: impl VectorLike<#dimension, ElementType = #field_type>) -> #field_type {
                     #(#calc_dot)+*
                 }
             }
@@ -336,7 +336,7 @@ fn generate(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
             .collect::<Vec<_>>();
         let impl_distance = quote! {
             impl #impl_generics #struct_name #type_generics #where_clause {
-                pub fn distance(&self, rhs: impl VectorLike<#field_type, #dimension>) -> <#field_type as VectorElement>::FloatCalcType {
+                pub fn distance(&self, rhs: impl VectorLike<#dimension, ElementType = #field_type>) -> <#field_type as VectorElement>::FloatCalcType {
                     let v = #struct_name { #(#calc_sub),* };
                     v.length()
                 }

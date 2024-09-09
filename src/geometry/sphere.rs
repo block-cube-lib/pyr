@@ -11,7 +11,7 @@ pub struct Sphere<T: VectorElement> {
 impl<T: VectorElement> Eq for Sphere<T> where T: Eq {}
 
 impl<T: VectorElement> Sphere<T> {
-    pub fn new(center: impl VectorLike<T, 3>, radius: T) -> Self {
+    pub fn new(center: impl VectorLike<3, ElementType = T>, radius: T) -> Self {
         Self {
             center: Vec3::new(center.get(0), center.get(1), center.get(2)),
             radius,
@@ -60,7 +60,7 @@ impl<T: VectorElement + num::Float + num::FromPrimitive + Zero> RayCast<T> for S
 mod test {
     use super::*;
 
-    type Vec3 = Vector<f64, 3>;
+    type Vec3 = Vec<f64, 3>;
 
     #[test]
     fn center() {

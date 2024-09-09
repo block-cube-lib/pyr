@@ -119,7 +119,7 @@ impl<T: MatrixElement, const ROW: usize, const COL: usize> MatrixLike<T, ROW, CO
 /// ```
 impl<V, T: MatrixElement, const ROW: usize, const COL: usize> From<[V; ROW]> for Matrix<T, ROW, COL>
 where
-    V: VectorLike<T, COL>,
+    V: VectorLike<COL, ElementType = T>,
 {
     fn from(m: [V; ROW]) -> Self {
         Self::new(m)
@@ -379,8 +379,8 @@ mod ops_test {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::math::matrix::traits::MatrixLike as _;
-    type Vec2<T> = Vector<T, 2>;
+    use crate::math::mat::traits::MatrixLike as _;
+    type Vec2<T> = Vec<T, 2>;
     type Matrix2<T> = Matrix<T, 2, 2>;
     type Matrix3<T> = Matrix<T, 3, 3>;
 
@@ -393,7 +393,7 @@ mod test {
     }
 
     #[test]
-    fn new_from_vector_array() {
+    fn new_from_vec_array() {
         let m1 = Matrix::new([Vec2::new(1, 2), Vec2::new(3, 4), Vec2::new(5, 6)]);
         let m2 = Matrix::<i32, 3, 2> {
             elements: [[1, 2], [3, 4], [5, 6]],

@@ -28,7 +28,7 @@ impl<T: VectorElement> Vec3<T> {
     /// ```
     pub fn from_v1_with_yz<V>(v: V, y: T, z: T) -> Self
     where
-        V: VectorLike<T, 1>,
+        V: VectorLike<1, ElementType = T>,
     {
         Self { x: v.get(0), y, z }
     }
@@ -42,7 +42,7 @@ impl<T: VectorElement> Vec3<T> {
     /// ```
     pub fn from_v2_with_z<V>(v: V, z: T) -> Self
     where
-        V: VectorLike<T, 2>,
+        V: VectorLike<2, ElementType = T>,
     {
         Self {
             x: v.get(0),
@@ -75,7 +75,9 @@ impl<T: VectorElement> Vec3<T> {
     pub const UNIT_Z: Self = Self::new(T::ZERO, T::ZERO, T::ONE);
 }
 
-impl<T: VectorElement> VectorLike<T, 3> for Vec3<T> {
+impl<T: VectorElement> VectorLike<3> for Vec3<T> {
+    type ElementType = T;
+
     fn get(&self, index: usize) -> T {
         match index {
             0 => self.x,
@@ -93,6 +95,17 @@ impl<T: VectorElement> VectorLike<T, 3> for Vec3<T> {
             _ => panic!("out of range"),
         }
     }
+
+    fn from_array(array: [T; 3]) -> Self {
+        Self::new(array[0], array[1], array[2])
+    }
+    fn into_array(self) -> [T; 3] {
+        [self.x, self.y, self.z]
+    }
+
+    fn into_float_array(self) -> [T::FloatCalcType; 3] {
+        [self.x.as_float_type(), self.y.as_float_type(), self.z.as_float_type()]
+    }
 }
 
 impl<T: VectorElement + fmt::Display> fmt::Display for Vec3<T> {
@@ -103,7 +116,7 @@ impl<T: VectorElement + fmt::Display> fmt::Display for Vec3<T> {
 
 impl<T: VectorElement + std::ops::Neg<Output = T>> Vec3<T> {
     /// Get the cross product of two vectors.
-    pub fn cross(&self, rhs: impl VectorLike<T, 3>) -> Self {
+    pub fn cross(&self, rhs: impl VectorLike<3, ElementType = T>) -> Self {
         #[cfg(feature = "right_handed_coordinates")]
         {
             Self {
@@ -126,7 +139,7 @@ impl<T: VectorElement + std::ops::Neg<Output = T>> Vec3<T> {
 impl<T: VectorElement> Vec3<T> {
     /// Get the angle between two vectors.
     /// Returns the angle in radians.
-    pub fn angle(&self, rhs: impl VectorLike<T, 3>) -> <T as VectorElement>::FloatCalcType {
+    pub fn angle(&self, rhs: impl VectorLike<3, ElementType = T>) -> <T as VectorElement>::FloatCalcType {
         let rhs = Vec3::<T>::new(rhs.get(0), rhs.get(1), rhs.get(2)).as_float_vec();
         let dot = self.as_float_vec().dot(rhs);
         let len = self.length() * rhs.length();
@@ -138,8 +151,8 @@ impl<T: VectorElement> Vec3<T> {
     /// The sign of the angle is determined by the sign of the cross product.
     pub fn signed_angle(
         &self,
-        rhs: impl VectorLike<T, 3>,
-        normal: impl VectorLike<T, 3>,
+        rhs: impl VectorLike<3, ElementType = T>,
+        normal: impl VectorLike<3, ElementType = T>,
     ) -> <T as VectorElement>::FloatCalcType {
         use crate::num::Zero as _;
         let rhs = Vec3::<T>::new(rhs.get(0), rhs.get(1), rhs.get(2)).as_float_vec();

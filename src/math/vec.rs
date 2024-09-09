@@ -1,4 +1,5 @@
 mod array_wrapper;
+pub mod ops;
 pub(crate) mod traits;
 mod vec1;
 mod vec2;

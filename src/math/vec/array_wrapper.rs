@@ -20,15 +20,33 @@ impl<T: VectorElement, const N: usize> ArrayWrapper<T, N> {
 
 impl<T: Eq + VectorElement, const N: usize> Eq for ArrayWrapper<T, N> {}
 
-impl<T: VectorElement, const DIMENSTION: usize> VectorLike<T, DIMENSTION>
+impl<T: VectorElement, const DIMENSTION: usize> VectorLike<DIMENSTION>
     for ArrayWrapper<T, DIMENSTION>
 {
+    type ElementType = T;
+
     fn get(&self, index: usize) -> T {
         self.elements[index]
     }
 
     fn set(&mut self, index: usize, value: T) {
         self.elements[index] = value;
+    }
+
+    fn from_array(array: [T; DIMENSTION]) -> Self {
+        Self { elements: array }
+    }
+    fn into_array(self) -> [T; DIMENSTION] {
+        self.elements
+    }
+
+    fn into_float_array(self) -> [T::FloatCalcType; DIMENSTION] {
+        use crate::num::Zero;
+        let mut result = [T::FloatCalcType::ZERO; DIMENSTION];
+        for i in 0..DIMENSTION {
+            result[i] = self.elements[i].as_float_type();
+        }
+        result
     }
 }
 
@@ -101,7 +119,7 @@ impl<T: VectorElement, const N: usize> ArrayWrapper<T, N> {
         result
     }
 
-    pub fn dot(&self, rhs: impl VectorLike<T, N>) -> T {
+    pub fn dot(&self, rhs: impl VectorLike<N, ElementType = T>) -> T {
         let mut result = T::ZERO;
         for i in 0..N {
             result += self.elements[i] * rhs.get(i);

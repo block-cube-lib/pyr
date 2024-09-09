@@ -12,7 +12,7 @@ pub trait MatrixLike<T, const ROW: usize, const COL: usize> {
 impl<T, const ROW: usize, const COL: usize, V> MatrixLike<T, ROW, COL> for [V; ROW]
 where
     T: MatrixElement,
-    V: VectorLike<T, COL>,
+    V: VectorLike<COL, ElementType = T>,
 {
     fn get(&self, row: usize, col: usize) -> T {
         self[row].get(col)

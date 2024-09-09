@@ -16,24 +16,51 @@ pub trait VectorElement:
     fn as_float_type(&self) -> Self::FloatCalcType;
 }
 
-pub trait FloatVectorElement: VectorElement<FloatCalcType = Self> + num::Float {
-}
+pub trait FloatVectorElement: VectorElement<FloatCalcType = Self> + num::Float {}
 
 /// A trait for types that can act like a vector.
-pub trait VectorLike<T: VectorElement, const DIMENSION: usize> {
-    fn get(&self, index: usize) -> T;
+pub trait VectorLike<const DIMENSION: usize>: Clone {
+    type ElementType: VectorElement;
 
-    fn set(&mut self, index: usize, value: T);
+    fn get(&self, index: usize) -> Self::ElementType;
+
+    fn set(&mut self, index: usize, value: Self::ElementType);
+
+    fn from_array(array: [Self::ElementType; DIMENSION]) -> Self;
+    fn into_array(self) -> [Self::ElementType; DIMENSION];
+
+    fn into_float_array(self) -> [<Self::ElementType as VectorElement>::FloatCalcType; DIMENSION];
 }
 
-impl<T: VectorElement, const DIMENSION: usize> VectorLike<T, DIMENSION> for [T; DIMENSION] {
-    fn get(&self, index: usize) -> T {
+impl<T: VectorElement, const DIMENSION: usize> VectorLike<DIMENSION> for [T; DIMENSION] {
+    type ElementType = T;
+
+    fn get(&self, index: usize) -> Self::ElementType {
         (*self)[index]
     }
 
     fn set(&mut self, index: usize, value: T) {
         (*self)[index] = value;
     }
+
+    fn from_array(array: [T; DIMENSION]) -> Self {
+        array
+    }
+    fn into_array(self) -> [T; DIMENSION] {
+        self
+    }
+
+    fn into_float_array(self) -> [T::FloatCalcType; DIMENSION] {
+        self.map(|x| x.as_float_type())
+    }
+}
+
+pub trait FloatVectorLike<const DIMENSION: usize>: VectorLike<DIMENSION> {}
+impl<V, const DIMENSION: usize> FloatVectorLike<DIMENSION> for V
+where
+    V: VectorLike<DIMENSION>,
+    V::ElementType: FloatVectorElement,
+{
 }
 
 #[doc(hidden)]
@@ -69,7 +96,9 @@ impl FloatVectorElement for f64 {}
 macro_rules! impl_vector_like_for_tuple {
     ($n: expr) => {
         seq!(N in 0..$n {
-            impl<T: VectorElement> VectorLike<T, $n> for (#(T,)*) {
+            impl<T: VectorElement> VectorLike<$n> for (#(T,)*) {
+                type ElementType = T;
+
                 fn get(&self, index: usize) -> T {
                     match index {
                         #( N => self.N, )*
@@ -82,6 +111,17 @@ macro_rules! impl_vector_like_for_tuple {
                             #( N => self.N = value, )*
                             _ => panic!("out of range"),
                         }
+                }
+
+                fn from_array(array: [T; $n]) -> Self {
+                    (#( array[N], )*)
+                }
+                fn into_array(self) -> [T; $n] {
+                    [ #( self.N, )* ]
+                }
+
+                fn into_float_array(self) -> [T::FloatCalcType; $n] {
+                    [ #( self.N.as_float_type(), )* ]
                 }
             }
         });

@@ -31,7 +31,9 @@ impl<T: VectorElement> Vec2<T> {
     }
 }
 
-impl<T: VectorElement> VectorLike<T, 2> for Vec2<T> {
+impl<T: VectorElement> VectorLike<2> for Vec2<T> {
+    type ElementType = T;
+
     fn get(&self, index: usize) -> T {
         match index {
             0 => self.x,
@@ -47,6 +49,17 @@ impl<T: VectorElement> VectorLike<T, 2> for Vec2<T> {
             _ => panic!("out of range"),
         }
     }
+
+    fn from_array(array: [T; 2]) -> Self {
+        Self::new(array[0], array[1])
+    }
+    fn into_array(self) -> [T; 2] {
+        [self.x, self.y]
+    }
+
+    fn into_float_array(self) -> [T::FloatCalcType; 2] {
+        [self.x.as_float_type(), self.y.as_float_type()]
+    }
 }
 
 impl<T: VectorElement + fmt::Display> fmt::Display for Vec2<T> {
@@ -56,7 +69,7 @@ impl<T: VectorElement + fmt::Display> fmt::Display for Vec2<T> {
 }
 
 impl<T: VectorElement> Vec2<T> {
-    pub fn cross(&self, rhs: impl VectorLike<T, 2>) -> T {
+    pub fn cross(&self, rhs: impl VectorLike<2, ElementType = T>) -> T {
         self.x * rhs.get(1) - self.y * rhs.get(0)
     }
 }
