@@ -19,7 +19,7 @@ pub trait VectorElement:
 pub trait FloatVectorElement: VectorElement<FloatCalcType = Self> + num::Float {}
 
 /// A trait for types that can act like a vector.
-pub trait VectorLike<const DIMENSION: usize>: Clone {
+pub trait VectorLike<const DIMENSION: usize>: Clone + Copy + PartialEq {
     type ElementType: VectorElement;
 
     fn get(&self, index: usize) -> Self::ElementType;
@@ -30,6 +30,11 @@ pub trait VectorLike<const DIMENSION: usize>: Clone {
     fn into_array(self) -> [Self::ElementType; DIMENSION];
 
     fn into_float_array(self) -> [<Self::ElementType as VectorElement>::FloatCalcType; DIMENSION];
+
+    fn into_other_vector<V: VectorLike<DIMENSION, ElementType = Self::ElementType>>(self) -> V {
+        let array = self.into_array();
+        V::from_array(array)
+    }
 }
 
 impl<T: VectorElement, const DIMENSION: usize> VectorLike<DIMENSION> for [T; DIMENSION] {
@@ -127,7 +132,7 @@ macro_rules! impl_vector_like_for_tuple {
         });
     };
 }
-seq!(D in 1..=256 {
+seq!(D in 1..=12 {
     impl_vector_like_for_tuple!(D);
 });
 

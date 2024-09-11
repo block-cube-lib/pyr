@@ -5,11 +5,11 @@ use std::ops::*;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct ArrayWrapper<T: VectorElement, const DIMENSION: usize> {
+pub struct VecWrapper<T: VectorElement, const DIMENSION: usize> {
     pub elements: [T; DIMENSION],
 }
 
-impl<T: VectorElement, const N: usize> ArrayWrapper<T, N> {
+impl<T: VectorElement, const N: usize> VecWrapper<T, N> {
     pub const ZERO: Self = Self {
         elements: [T::ZERO; N],
     };
@@ -18,10 +18,10 @@ impl<T: VectorElement, const N: usize> ArrayWrapper<T, N> {
     };
 }
 
-impl<T: Eq + VectorElement, const N: usize> Eq for ArrayWrapper<T, N> {}
+impl<T: Eq + VectorElement, const N: usize> Eq for VecWrapper<T, N> {}
 
 impl<T: VectorElement, const DIMENSTION: usize> VectorLike<DIMENSTION>
-    for ArrayWrapper<T, DIMENSTION>
+    for VecWrapper<T, DIMENSTION>
 {
     type ElementType = T;
 
@@ -50,13 +50,13 @@ impl<T: VectorElement, const DIMENSTION: usize> VectorLike<DIMENSTION>
     }
 }
 
-impl<T: VectorElement, const N: usize> std::convert::From<[T; N]> for ArrayWrapper<T, N> {
+impl<T: VectorElement, const N: usize> std::convert::From<[T; N]> for VecWrapper<T, N> {
     fn from(value: [T; N]) -> Self {
         Self { elements: value }
     }
 }
 
-impl<T, const N: usize> Index<usize> for ArrayWrapper<T, N>
+impl<T, const N: usize> Index<usize> for VecWrapper<T, N>
 where
     T: VectorElement,
 {
@@ -67,7 +67,7 @@ where
     }
 }
 
-impl<T, const N: usize> IndexMut<usize> for ArrayWrapper<T, N>
+impl<T, const N: usize> IndexMut<usize> for VecWrapper<T, N>
 where
     T: VectorElement,
 {
@@ -79,7 +79,7 @@ where
 macro_rules! impl_from_tuple {
     ($dim: expr) => {
         seq!(N in 0..$dim {
-            impl<T: VectorElement> std::convert::From<(#(T,)*)> for ArrayWrapper<T, $dim> {
+            impl<T: VectorElement> std::convert::From<(#(T,)*)> for VecWrapper<T, $dim> {
                 fn from(value: (#(T,)*)) -> Self {
                     Self { elements: [#(value.N,)*] }
                 }
@@ -90,7 +90,7 @@ macro_rules! impl_from_tuple {
 
 macro_rules! impl_new {
     ($dim: expr) => {
-        impl<T: VectorElement> ArrayWrapper<T, $dim> {
+        impl<T: VectorElement> VecWrapper<T, $dim> {
             seq!(n in 0..$dim {
                 paste! {
                     #[allow(clippy::too_many_arguments)]
@@ -110,7 +110,7 @@ seq!(N in 1..=32 {
     impl_new!(N);
 });
 
-impl<T: VectorElement, const N: usize> ArrayWrapper<T, N> {
+impl<T: VectorElement, const N: usize> VecWrapper<T, N> {
     pub fn length_squared(&self) -> T {
         let mut result = T::ZERO;
         for v in self.elements {
@@ -128,7 +128,7 @@ impl<T: VectorElement, const N: usize> ArrayWrapper<T, N> {
     }
 }
 
-impl<T: VectorElement + num::Float, const N: usize> ArrayWrapper<T, N> {
+impl<T: VectorElement + num::Float, const N: usize> VecWrapper<T, N> {
     pub fn length(&self) -> T {
         self.length_squared().sqrt()
     }
@@ -152,9 +152,9 @@ impl<T: VectorElement + num::Float, const N: usize> ArrayWrapper<T, N> {
     }
 }
 
-macro_rules! impl_ops_vector_trait_for_array_wrapper {
+macro_rules! impl_ops_vector_trait_for_vec_wrapper {
     ($trait_name: ident, $func_name: ident, $op: tt) => {
-        impl<T: VectorElement, const N: usize> $trait_name<Self> for ArrayWrapper<T, N> {
+        impl<T: VectorElement, const N: usize> $trait_name<Self> for VecWrapper<T, N> {
             type Output = Self;
 
             fn $func_name(self, rhs: Self) -> Self::Output {
@@ -169,7 +169,7 @@ macro_rules! impl_ops_vector_trait_for_array_wrapper {
         }
 
         paste! {
-            impl<T: VectorElement, const N: usize> [<$trait_name Assign>]<Self> for ArrayWrapper<T, N>
+            impl<T: VectorElement, const N: usize> [<$trait_name Assign>]<Self> for VecWrapper<T, N>
             {
                 fn [<$func_name _assign>](&mut self, rhs: Self) {
                     *self = *self $op rhs;
@@ -179,14 +179,14 @@ macro_rules! impl_ops_vector_trait_for_array_wrapper {
     };
 }
 
-impl_ops_vector_trait_for_array_wrapper!(Add, add, +);
-impl_ops_vector_trait_for_array_wrapper!(Sub, sub, -);
-impl_ops_vector_trait_for_array_wrapper!(Mul, mul, *);
-impl_ops_vector_trait_for_array_wrapper!(Div, div, /);
+impl_ops_vector_trait_for_vec_wrapper!(Add, add, +);
+impl_ops_vector_trait_for_vec_wrapper!(Sub, sub, -);
+impl_ops_vector_trait_for_vec_wrapper!(Mul, mul, *);
+impl_ops_vector_trait_for_vec_wrapper!(Div, div, /);
 
-macro_rules! impl_ops_scalar_trait_for_array_wrapper {
+macro_rules! impl_ops_scalar_trait_for_vec_wrapper {
     ($trait_name: ident, $func_name: ident, $op: tt) => {
-        impl<T: VectorElement, const N: usize> $trait_name<T> for ArrayWrapper<T, N> {
+        impl<T: VectorElement, const N: usize> $trait_name<T> for VecWrapper<T, N> {
             type Output = Self;
 
             fn $func_name(self, scalar: T) -> Self::Output {
@@ -201,7 +201,7 @@ macro_rules! impl_ops_scalar_trait_for_array_wrapper {
         }
 
         paste! {
-            impl<T: VectorElement, const N: usize> [<$trait_name Assign>]<T> for ArrayWrapper<T, N>
+            impl<T: VectorElement, const N: usize> [<$trait_name Assign>]<T> for VecWrapper<T, N>
             {
                 fn [<$func_name _assign>](&mut self, scalar: T) {
                     *self = *self $op scalar;
@@ -211,10 +211,10 @@ macro_rules! impl_ops_scalar_trait_for_array_wrapper {
     };
 }
 
-impl_ops_scalar_trait_for_array_wrapper!(Mul, mul, *);
-impl_ops_scalar_trait_for_array_wrapper!(Div, div, /);
+impl_ops_scalar_trait_for_vec_wrapper!(Mul, mul, *);
+impl_ops_scalar_trait_for_vec_wrapper!(Div, div, /);
 
-impl<T: VectorElement + Neg<Output = T>, const N: usize> Neg for ArrayWrapper<T, N> {
+impl<T: VectorElement + Neg<Output = T>, const N: usize> Neg for VecWrapper<T, N> {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
@@ -232,7 +232,7 @@ mod test {
 
     #[test]
     fn new() {
-        const V: ArrayWrapper<i32, 5> = ArrayWrapper::<i32, 5>::new(1, 2, 3, 4, 5);
+        const V: VecWrapper<i32, 5> = VecWrapper::<i32, 5>::new(1, 2, 3, 4, 5);
         assert_eq!(V.elements[0], 1);
         assert_eq!(V.elements[1], 2);
         assert_eq!(V.elements[2], 3);
@@ -242,7 +242,7 @@ mod test {
 
     #[test]
     fn vector_like_get() {
-        let v = ArrayWrapper::<i32, 5>::new(1, 2, 3, 4, 5);
+        let v = VecWrapper::<i32, 5>::new(1, 2, 3, 4, 5);
         assert_eq!(v.get(0), 1);
         assert_eq!(v.get(1), 2);
         assert_eq!(v.get(2), 3);
@@ -253,13 +253,13 @@ mod test {
     #[test]
     #[should_panic]
     fn vector_like_get_out_of_range() {
-        let v = ArrayWrapper::<i32, 5>::ZERO;
+        let v = VecWrapper::<i32, 5>::ZERO;
         let _ = v.get(5);
     }
 
     #[test]
     fn vector_like_set() {
-        let mut v = ArrayWrapper::<i32, 5>::ZERO;
+        let mut v = VecWrapper::<i32, 5>::ZERO;
         v.set(0, 1);
         v.set(1, 2);
         v.set(2, 3);
@@ -275,31 +275,31 @@ mod test {
     #[test]
     #[should_panic]
     fn vector_like_set_out_of_range() {
-        let mut v = ArrayWrapper::<i32, 5>::ZERO;
+        let mut v = VecWrapper::<i32, 5>::ZERO;
         v.set(5, 0);
     }
 
     #[test]
     fn from_array() {
-        let v = ArrayWrapper::<i32, 5>::from([1, 2, 3, 4, 5]);
+        let v = VecWrapper::<i32, 5>::from([1, 2, 3, 4, 5]);
         assert_eq!(v.elements, [1, 2, 3, 4, 5])
     }
 
     #[test]
     fn from_tuple() {
-        let v = ArrayWrapper::<i32, 5>::from((1, 2, 3, 4, 5));
+        let v = VecWrapper::<i32, 5>::from((1, 2, 3, 4, 5));
         assert_eq!(v.elements, [1, 2, 3, 4, 5])
     }
 
     #[test]
     fn length_squared() {
-        let v = ArrayWrapper::<i32, 5>::new(1, 2, 3, 4, 5);
+        let v = VecWrapper::<i32, 5>::new(1, 2, 3, 4, 5);
         assert_eq!(v.length_squared(), 1 * 1 + 2 * 2 + 3 * 3 + 4 * 4 + 5 * 5);
     }
 
     #[test]
     fn length() {
-        let v = ArrayWrapper::<f32, 5>::new(1.0, 2.0, 3.0, 4.0, 5.0);
+        let v = VecWrapper::<f32, 5>::new(1.0, 2.0, 3.0, 4.0, 5.0);
         assert_eq!(
             v.length(),
             (1.0_f32 * 1.0 + 2.0 * 2.0 + 3.0 * 3.0 + 4.0 * 4.0 + 5.0 * 5.0).sqrt()
@@ -308,7 +308,7 @@ mod test {
 
     #[test]
     fn normalized() {
-        let v = ArrayWrapper::<f32, 5>::new(1.0, 2.0, 3.0, 4.0, 5.0);
+        let v = VecWrapper::<f32, 5>::new(1.0, 2.0, 3.0, 4.0, 5.0);
         let n = v.normalized();
         let one_over_len = 1.0 / v.length();
         assert_ne!((n.length_squared() - 1.0).abs(), 0.00001);
@@ -321,7 +321,7 @@ mod test {
 
     #[test]
     fn dot() {
-        let v1 = ArrayWrapper::<i32, 5>::new(1, 2, 3, 4, 5);
+        let v1 = VecWrapper::<i32, 5>::new(1, 2, 3, 4, 5);
         let d = v1.dot([11, 12, 13, 14, 15]);
         assert_eq!(d, 1 * 11 + 2 * 12 + 3 * 13 + 4 * 14 + 5 * 15);
     }

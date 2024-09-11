@@ -1,62 +1,72 @@
-use crate::math::{Vec3, VectorElement};
+use crate::math::vec::ops;
+use crate::math::{FloatVectorElement, FloatVectorLike, VectorElement, VectorLike};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Ray<T: VectorElement> {
-    origin: Vec3<T>,
-    direction: Vec3<T>
+pub struct Ray<V: FloatVectorLike<3>> {
+    origin: V,
+    direction: V,
 }
 
-// impl Eq when if T implements Eq
-impl <T: VectorElement + Eq> Eq for Ray<T> {}
-
-impl <T: VectorElement> Ray<T> {
-    pub fn new(origin: Vec3<T>, direction: Vec3<T>) -> Ray<T> {
-        Ray { origin, direction }
+impl<V: FloatVectorLike<3>> Ray<V>
+where
+    V::ElementType: FloatVectorElement,
+{
+    pub fn new(
+        origin: impl VectorLike<3, ElementType = V::ElementType>,
+        direction: impl VectorLike<3, ElementType = V::ElementType>,
+    ) -> Self {
+        Ray {
+            origin: origin.into_other_vector(),
+            direction: ops::normalized(direction),
+        }
     }
 
-    pub fn point_at(&self, t: T) -> Vec3<T> {
-        self.origin + self.direction * t
+    pub fn point_at(&self, t: V::ElementType) -> V {
+        let dir_mul_t: V = ops::mul_scalar(self.direction, t);
+        ops::add(self.origin, dir_mul_t)
     }
 
-    pub fn origin(&self) -> Vec3<T> {
+    pub fn origin(&self) -> V {
         self.origin
     }
 
-    pub fn direction(&self) -> Vec3<T> {
+    pub fn direction(&self) -> V {
         self.direction
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct RayCastHit<T: VectorElement> {
-    point: Vec3<T>,
-    normal: Vec3<T>,
-    t: T,
+pub struct RayCastHit<V: FloatVectorLike<3>> {
+    point: V,
+    normal: V,
+    t: V::ElementType,
 }
 
-impl<T: VectorElement> RayCastHit<T> {
-    pub fn new(point: Vec3<T>, normal: Vec3<T>, t: T) -> RayCastHit<T> {
-        RayCastHit { point, normal, t }
+impl<V: FloatVectorLike<3>> RayCastHit<V> {
+    pub fn new(point: V, normal: V, t: V::ElementType) -> RayCastHit<V> {
+        Self { point, normal, t }
     }
 
-    pub fn point(&self) -> Vec3<T> {
+    pub fn point(&self) -> V {
         self.point
     }
-    pub fn normal(&self) -> Vec3<T> {
+    pub fn normal(&self) -> V {
         self.normal
     }
-    pub fn t(&self) -> T {
+    pub fn t(&self) -> V::ElementType {
         self.t
     }
 }
 
-pub trait RayCast<T: VectorElement> {
-    fn cast(&self, ray: &Ray<T>) -> Option<RayCastHit<T>>;
+pub trait RayCast<V: FloatVectorLike<3>> {
+    fn cast(&self, ray: &Ray<V>) -> Option<RayCastHit<V>>;
 }
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    use crate::math::vec::VectorLike;
+    type Vec3 = crate::math::vec::Vec3<f64>;
+    type Ray = super::Ray<[f64; 3]>;
 
     #[test]
     fn test_ray() {
@@ -64,10 +74,12 @@ mod test {
         let direction = Vec3::new(4.0, 5.0, 6.0);
         let ray = Ray::new(origin, direction);
 
-        assert_eq!(ray.origin(), origin);
-        assert_eq!(ray.direction(), direction);
-        assert_eq!(ray.point_at(0.0), origin);
-        assert_eq!(ray.point_at(1.0), origin + direction);
-        assert_eq!(ray.point_at(2.0), origin + direction * 2.0);
+        let nd = direction.normalized();
+
+        assert_eq!(ray.origin(), origin.into_other_vector::<[f64; 3]>());
+        assert_eq!(ray.direction(), nd.into_other_vector::<[f64; 3]>());
+        assert_eq!(ray.point_at(0.0), origin.into_other_vector::<[f64; 3]>());
+        assert_eq!(ray.point_at(1.0), (origin + nd).into_other_vector::<[f64; 3]>());
+        assert_eq!(ray.point_at(2.0), (origin + nd * 2.0).into_other_vector::<[f64; 3]>());
     }
 }

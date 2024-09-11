@@ -1,5 +1,58 @@
 use super::traits::*;
 
+pub fn add<VRet, T, const N: usize>(
+    lhs: impl VectorLike<N, ElementType = T>,
+    rhs: impl VectorLike<N, ElementType = T>,
+) -> VRet
+where
+    VRet: VectorLike<N, ElementType = T>,
+    T: VectorElement,
+{
+    let mut result = [T::ZERO; N];
+    for i in 0..N {
+        result[i] = lhs.get(i) + rhs.get(i);
+    }
+    VRet::from_array(result)
+}
+pub fn sub<VRet, T, const N: usize>(
+    lhs: impl VectorLike<N, ElementType = T>,
+    rhs: impl VectorLike<N, ElementType = T>,
+) -> VRet
+where
+    VRet: VectorLike<N, ElementType = T>,
+    T: VectorElement,
+{
+    let mut result = [T::ZERO; N];
+    for i in 0..N {
+        result[i] = lhs.get(i) - rhs.get(i);
+    }
+    VRet::from_array(result)
+}
+
+pub fn mul_scalar<VRet, T, const N: usize>(lhs: impl VectorLike<N, ElementType = T>, rhs: T) -> VRet
+where
+    VRet: VectorLike<N, ElementType = T>,
+    T: VectorElement,
+{
+    let mut result = lhs.into_array();
+    for i in 0..N {
+        result[i] = result.get(i) * rhs;
+    }
+    VRet::from_array(result)
+}
+
+pub fn div_scalar<VRet, T, const N: usize>(lhs: impl VectorLike<N, ElementType = T>, rhs: T) -> VRet
+where
+    VRet: VectorLike<N, ElementType = T>,
+    T: VectorElement,
+{
+    let mut result = lhs.into_array();
+    for i in 0..N {
+        result[i] = result.get(i) / rhs;
+    }
+    VRet::from_array(result)
+}
+
 pub fn dot<const N: usize, T: VectorElement>(
     a: impl VectorLike<N, ElementType = T>,
     b: impl VectorLike<N, ElementType = T>,
@@ -34,7 +87,7 @@ where
     V: VectorLike<N>,
     VRet: FloatVectorLike<N, ElementType = <V::ElementType as VectorElement>::FloatCalcType>,
 {
-    let len = length(v.clone());
+    let len = length(v);
     let mut result = v.into_float_array();
     for i in 0..N {
         result[i] = result[i] / len;

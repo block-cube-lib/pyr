@@ -1,5 +1,5 @@
 use super::traits::{VectorElement, VectorLike};
-use crate::math::vec::array_wrapper::ArrayWrapper;
+use crate::math::vec::vec_wrapper::VecWrapper;
 use num::{One, Zero};
 use pyr_math_derive::Vector;
 use serde::{Deserialize, Serialize};
@@ -51,8 +51,8 @@ impl<T: VectorElement> VectorLike<1> for Vec1<T> {
     }
 }
 
-impl<T: VectorElement> std::convert::From<ArrayWrapper<T, 1>> for Vec1<T> {
-    fn from(value: ArrayWrapper<T, 1>) -> Self {
+impl<T: VectorElement> std::convert::From<VecWrapper<T, 1>> for Vec1<T> {
+    fn from(value: VecWrapper<T, 1>) -> Self {
         Self {
             x: value.elements[0],
         }
@@ -144,7 +144,7 @@ mod test {
 
         #[test]
         fn from_array_wrapper(x in any::<i32>()) {
-            let v = Vec1::from(ArrayWrapper::<i32, 1>::new(x));
+            let v = Vec1::from(VecWrapper::<i32, 1>::new(x));
             assert_eq!(v.x, x);
         }
 
