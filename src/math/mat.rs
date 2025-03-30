@@ -5,7 +5,7 @@ use crate::math::vec::traits::*;
 use num::Float;
 use std::ops::*;
 
-/// Matrix type. column-major order.
+/// Matrix type.
 /// Mat<i32, 2, 3> is a 2 row 3 column matrix of i32.
 /// [[a1, a2, a3]
 ///  [b1, b2, b3]]
