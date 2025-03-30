@@ -11,7 +11,7 @@ where
     Standard: Distribution<T>,
 {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec1<T> {
-        Vec1 { x: rng.gen() }
+        Vec1 { x: rng.r#gen() }
     }
 }
 
@@ -22,8 +22,8 @@ where
 {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec2<T> {
         Vec2 {
-            x: rng.gen(),
-            y: rng.gen(),
+            x: rng.r#gen(),
+            y: rng.r#gen(),
         }
     }
 }
@@ -35,9 +35,9 @@ where
 {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec3<T> {
         Vec3 {
-            x: rng.gen(),
-            y: rng.gen(),
-            z: rng.gen(),
+            x: rng.r#gen(),
+            y: rng.r#gen(),
+            z: rng.r#gen(),
         }
     }
 }
@@ -49,10 +49,10 @@ where
 {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec4<T> {
         Vec4 {
-            x: rng.gen(),
-            y: rng.gen(),
-            z: rng.gen(),
-            w: rng.gen(),
+            x: rng.r#gen(),
+            y: rng.r#gen(),
+            z: rng.r#gen(),
+            w: rng.r#gen(),
         }
     }
 }
@@ -498,7 +498,7 @@ mod test {
         let mut rng = rand::thread_rng();
         let mut prev = Vec2::<i32>::default();
         for _ in 0..1000 {
-            let v: Vec2<i32> = rng.gen();
+            let v: Vec2<i32> = rng.r#gen();
             assert_ne!(v, prev);
             prev = v;
         }
@@ -509,7 +509,7 @@ mod test {
         let mut rng = rand::thread_rng();
         let mut prev = <Vec3<i32> as Zero>::ZERO;
         for _ in 0..1000 {
-            let v: Vec3<i32> = rng.gen();
+            let v: Vec3<i32> = rng.r#gen();
             assert_ne!(v, prev);
             prev = v;
         }

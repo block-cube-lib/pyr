@@ -1,8 +1,7 @@
-use super::traits::{VectorElement, VectorLike};
-use num::Float;
+use super::traits::{FloatVectorElement, VectorElement, VectorLike};
+use crate::num::AsFloatingPoint;
 use pyr_math_derive::Vector;
 use serde::{Deserialize, Serialize};
-use std::fmt;
 
 /// A 3-dimensional vector.
 #[repr(C)]
@@ -30,7 +29,7 @@ impl<T: VectorElement> Vec3<T> {
     where
         V: VectorLike<1, ElementType = T>,
     {
-        Self { x: v.get(0), y, z }
+        Self { x: *v.get(0), y, z }
     }
 
     /// Create a new vector from a 2-dimensional vector.
@@ -45,8 +44,8 @@ impl<T: VectorElement> Vec3<T> {
         V: VectorLike<2, ElementType = T>,
     {
         Self {
-            x: v.get(0),
-            y: v.get(1),
+            x: *v.get(0),
+            y: *v.get(1),
             z,
         }
     }
@@ -78,39 +77,22 @@ impl<T: VectorElement> Vec3<T> {
 impl<T: VectorElement> VectorLike<3> for Vec3<T> {
     type ElementType = T;
 
-    fn get(&self, index: usize) -> T {
+    fn get(&self, index: usize) -> &T {
         match index {
-            0 => self.x,
-            1 => self.y,
-            2 => self.z,
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
             _ => panic!("out of range"),
         }
     }
 
-    fn set(&mut self, index: usize, value: T) {
+    fn get_mut(&mut self, index: usize) -> &mut T {
         match index {
-            0 => self.x = value,
-            1 => self.y = value,
-            2 => self.z = value,
+            0 => &mut self.x,
+            1 => &mut self.y,
+            2 => &mut self.z,
             _ => panic!("out of range"),
         }
-    }
-
-    fn from_array(array: [T; 3]) -> Self {
-        Self::new(array[0], array[1], array[2])
-    }
-    fn into_array(self) -> [T; 3] {
-        [self.x, self.y, self.z]
-    }
-
-    fn into_float_array(self) -> [T::FloatCalcType; 3] {
-        [self.x.as_float_type(), self.y.as_float_type(), self.z.as_float_type()]
-    }
-}
-
-impl<T: VectorElement + fmt::Display> fmt::Display for Vec3<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}, {}, {}]", self.x, self.y, self.z)
     }
 }
 
@@ -120,17 +102,17 @@ impl<T: VectorElement + std::ops::Neg<Output = T>> Vec3<T> {
         #[cfg(feature = "right_handed_coordinates")]
         {
             Self {
-                x: self.get(1) * rhs.get(2) - self.get(2) * rhs.get(1),
-                y: self.get(2) * rhs.get(0) - self.get(0) * rhs.get(2),
-                z: self.get(0) * rhs.get(1) - self.get(1) * rhs.get(0),
+                x: *self.get(1) * *rhs.get(2) - *self.get(2) * *rhs.get(1),
+                y: *self.get(2) * *rhs.get(0) - *self.get(0) * *rhs.get(2),
+                z: *self.get(0) * *rhs.get(1) - *self.get(1) * *rhs.get(0),
             }
         }
         #[cfg(feature = "left_handed_coordinates")]
         {
             Self {
-                x: self.get(2) * rhs.get(1) - self.get(1) * rhs.get(2),
-                y: self.get(0) * rhs.get(2) - self.get(2) * rhs.get(0),
-                z: self.get(1) * rhs.get(0) - self.get(0) * rhs.get(1),
+                x: *self.get(2) * *rhs.get(1) - *self.get(1) * *rhs.get(2),
+                y: *self.get(0) * *rhs.get(2) - *self.get(2) * *rhs.get(0),
+                z: *self.get(1) * *rhs.get(0) - *self.get(0) * *rhs.get(1),
             }
         }
     }
@@ -139,8 +121,14 @@ impl<T: VectorElement + std::ops::Neg<Output = T>> Vec3<T> {
 impl<T: VectorElement> Vec3<T> {
     /// Get the angle between two vectors.
     /// Returns the angle in radians.
-    pub fn angle(&self, rhs: impl VectorLike<3, ElementType = T>) -> <T as VectorElement>::FloatCalcType {
-        let rhs = Vec3::<T>::new(rhs.get(0), rhs.get(1), rhs.get(2)).as_float_vec();
+    pub fn angle(&self, rhs: impl VectorLike<3, ElementType = T>) -> <T as AsFloatingPoint>::Output
+    where
+        <T as AsFloatingPoint>::Output: FloatVectorElement,
+    {
+        use super::ops::vector_cast;
+        use ::num::Float as _;
+        let rhs: Self = vector_cast(rhs);
+        let rhs = rhs.as_float_vec();
         let dot = self.as_float_vec().dot(rhs);
         let len = self.length() * rhs.length();
         (dot / len).acos()
@@ -153,24 +141,30 @@ impl<T: VectorElement> Vec3<T> {
         &self,
         rhs: impl VectorLike<3, ElementType = T>,
         normal: impl VectorLike<3, ElementType = T>,
-    ) -> <T as VectorElement>::FloatCalcType {
+    ) -> <T as AsFloatingPoint>::Output
+    where
+        <T as AsFloatingPoint>::Output: FloatVectorElement,
+    {
         use crate::num::Zero as _;
-        let rhs = Vec3::<T>::new(rhs.get(0), rhs.get(1), rhs.get(2)).as_float_vec();
+        let rhs = Vec3::<T>::new(*rhs.get(0), *rhs.get(1), *rhs.get(2)).as_float_vec();
         let lhs = self.as_float_vec();
         let angle = lhs.angle(rhs);
         let cross = lhs.cross(rhs);
-        let normal = Vec3::<T>::new(normal.get(0), normal.get(1), normal.get(2)).as_float_vec();
-        if cross.dot(normal) < <T as VectorElement>::FloatCalcType::ZERO {
+        let normal = Vec3::<T>::new(*normal.get(0), *normal.get(1), *normal.get(2)).as_float_vec();
+        if cross.dot(normal) < <T as AsFloatingPoint>::Output::ZERO {
             -angle
         } else {
             angle
         }
     }
 
-    pub fn reflect(&self, normal: Vec3<T>) -> Vec3<<T as VectorElement>::FloatCalcType> {
+    pub fn reflect(&self, normal: Vec3<T>) -> Vec3<<T as AsFloatingPoint>::Output>
+    where
+        <T as AsFloatingPoint>::Output: FloatVectorElement,
+    {
         use crate::num::One as _;
-        let two: <T as VectorElement>::FloatCalcType =
-            <T as VectorElement>::FloatCalcType::ONE + <T as VectorElement>::FloatCalcType::ONE;
+        let two: <T as AsFloatingPoint>::Output =
+            <T as AsFloatingPoint>::Output::ONE + <T as AsFloatingPoint>::Output::ONE;
         let v = self.as_float_vec();
         let normal = normal.normalized();
         v - normal * v.dot(normal) * two
@@ -220,7 +214,7 @@ mod test {
 
         #[test]
         fn vector_like_get(v in gen_vec3::<i32>()) {
-            assert_eq!((v.get(0), v.get(1), v.get(2)), (v.x, v.y, v.z));
+            assert_eq!((*v.get(0), *v.get(1), *v.get(2)), (v.x, v.y, v.z));
         }
 
         #[test]

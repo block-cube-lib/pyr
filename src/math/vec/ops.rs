@@ -1,4 +1,27 @@
 use super::traits::*;
+use crate::num::{AsFloatingPoint, Zero};
+
+pub fn into_floating_point_array<In, const N: usize>(
+    v: In,
+) -> [<In::ElementType as AsFloatingPoint>::Output; N]
+where
+    In: VectorLike<N>,
+{
+    let mut result = [In::ElementType::ZERO.as_floating_point(); N];
+    for i in 0..N {
+        result[i] = v.get(i).as_floating_point();
+    }
+    result
+}
+
+pub fn vector_cast<T: VectorElement, In, Out, const N: usize>(v: In) -> Out
+where
+    In: VectorLike<N, ElementType = T>,
+    Out: VectorLike<N, ElementType = T>,
+{
+    let arr: [T; N] = v.into();
+    arr.into()
+}
 
 pub fn add<VRet, T, const N: usize>(
     lhs: impl VectorLike<N, ElementType = T>,
@@ -8,11 +31,11 @@ where
     VRet: VectorLike<N, ElementType = T>,
     T: VectorElement,
 {
-    let mut result = [T::ZERO; N];
+    let mut result = lhs;
     for i in 0..N {
-        result[i] = lhs.get(i) + rhs.get(i);
+        *result.get_mut(i) += *rhs.get(i);
     }
-    VRet::from_array(result)
+    vector_cast(result)
 }
 pub fn sub<VRet, T, const N: usize>(
     lhs: impl VectorLike<N, ElementType = T>,
@@ -22,11 +45,11 @@ where
     VRet: VectorLike<N, ElementType = T>,
     T: VectorElement,
 {
-    let mut result = [T::ZERO; N];
+    let mut result = lhs;
     for i in 0..N {
-        result[i] = lhs.get(i) - rhs.get(i);
+        *result.get_mut(i) += *rhs.get(i);
     }
-    VRet::from_array(result)
+    vector_cast(result)
 }
 
 pub fn mul_scalar<VRet, T, const N: usize>(lhs: impl VectorLike<N, ElementType = T>, rhs: T) -> VRet
@@ -34,11 +57,11 @@ where
     VRet: VectorLike<N, ElementType = T>,
     T: VectorElement,
 {
-    let mut result = lhs.into_array();
+    let mut result = lhs;
     for i in 0..N {
-        result[i] = result.get(i) * rhs;
+        *result.get_mut(i) *= rhs;
     }
-    VRet::from_array(result)
+    vector_cast(result)
 }
 
 pub fn div_scalar<VRet, T, const N: usize>(lhs: impl VectorLike<N, ElementType = T>, rhs: T) -> VRet
@@ -46,65 +69,64 @@ where
     VRet: VectorLike<N, ElementType = T>,
     T: VectorElement,
 {
-    let mut result = lhs.into_array();
+    let mut result = lhs;
     for i in 0..N {
-        result[i] = result.get(i) / rhs;
+        *result.get_mut(i) *= rhs;
     }
-    VRet::from_array(result)
+    vector_cast(result)
 }
 
 pub fn dot<const N: usize, T: VectorElement>(
     a: impl VectorLike<N, ElementType = T>,
     b: impl VectorLike<N, ElementType = T>,
 ) -> T {
-    (0..N).fold(T::ZERO, |acc, i| acc + a.get(i) * b.get(i))
+    let mut result = T::ZERO;
+    for i in 0..N {
+        result += *a.get(i) * *b.get(i);
+    }
+    result
 }
 
 pub fn length_squared<T: VectorElement, const N: usize>(
     v: impl VectorLike<N, ElementType = T>,
 ) -> T {
-    let mut sum = T::ZERO;
-    for i in 0..N {
-        sum += v.get(i) * v.get(i);
-    }
-    sum
+    dot(v, v)
 }
 
 pub fn length<T: VectorElement, const N: usize>(
     v: impl VectorLike<N, ElementType = T>,
-) -> T::FloatCalcType {
-    use num::Float as _;
-    let mut sum = T::ZERO.as_float_type();
-    for i in 0..N {
-        let element_as_float = v.get(i).as_float_type();
-        sum = sum + element_as_float * element_as_float;
-    }
-    sum.sqrt()
+) -> <T as AsFloatingPoint>::Output
+where
+    <T as AsFloatingPoint>::Output: VectorElement,
+{
+    let fv: [<T as AsFloatingPoint>::Output; N] = into_floating_point_array(v);
+    let f_ls = length_squared(fv);
+    ::num::Float::sqrt(f_ls)
 }
 
 pub fn normalized<VRet, V: VectorLike<N>, const N: usize>(v: V) -> VRet
 where
     V: VectorLike<N>,
-    VRet: FloatVectorLike<N, ElementType = <V::ElementType as VectorElement>::FloatCalcType>,
+    <V::ElementType as AsFloatingPoint>::Output: VectorElement,
+    VRet: FloatVectorLike<N, ElementType = <V::ElementType as AsFloatingPoint>::Output>,
 {
     let len = length(v);
-    let mut result = v.into_float_array();
+    let mut result = into_floating_point_array(v);
     for i in 0..N {
         result[i] = result[i] / len;
     }
-    VRet::from_array(result)
+    result.into()
 }
 
 pub fn angle<T: FloatVectorElement, const N: usize>(
     a: impl VectorLike<N, ElementType = T>,
     b: impl VectorLike<N, ElementType = T>,
 ) -> T {
-    let a = a.into_float_array();
-    let b = b.into_float_array();
     let dot = dot(a, b);
     let len = length(a) * length(b);
     (dot / len).acos()
 }
+
 
 #[cfg(test)]
 mod tests {

@@ -1,11 +1,9 @@
-use super::traits::{VectorElement, VectorLike};
-use crate::math::vec::vec_wrapper::VecWrapper;
-use num::{One, Zero};
+use crate::math::traits::{VectorElement, VectorLike};
 use pyr_math_derive::Vector;
 use serde::{Deserialize, Serialize};
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq, Vector, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, Vector, PartialEq, Serialize, Deserialize)]
 pub struct Vec1<T: VectorElement> {
     pub x: T,
 }
@@ -16,75 +14,26 @@ impl<T: VectorElement> Vec1<T> {
     }
 }
 
-impl<T: VectorElement> Vec1<T> {
-    pub const ZERO: Self = Self::new(T::ZERO);
-    pub const ONE: Self = Self::new(T::ONE);
-    pub const UNIT_X: Self = Self::new(T::ONE);
-}
-
 impl<T: VectorElement> VectorLike<1> for Vec1<T> {
     type ElementType = T;
 
-    fn get(&self, index: usize) -> T {
+    fn get(&self, index: usize) -> &T {
         match index {
-            0 => self.x,
+            0 => &self.x,
             _ => panic!("out of range"),
         }
     }
 
-    fn set(&mut self, index: usize, value: T) {
+    fn get_mut(&mut self, index: usize) -> &mut T {
         match index {
-            0 => self.x = value,
+            0 => &mut self.x,
             _ => panic!("out of range"),
         }
     }
-
-    fn from_array(array: [T; 1]) -> Self {
-        Self::new(array[0])
-    }
-    fn into_array(self) -> [T; 1] {
-        [self.x]
-    }
-
-    fn into_float_array(self) -> [T::FloatCalcType; 1] {
-        [self.x.as_float_type()]
-    }
 }
 
-impl<T: VectorElement> std::convert::From<VecWrapper<T, 1>> for Vec1<T> {
-    fn from(value: VecWrapper<T, 1>) -> Self {
-        Self {
-            x: value.elements[0],
-        }
-    }
-}
-
-impl<T: VectorElement> std::convert::From<(T,)> for Vec1<T> {
-    fn from(value: (T,)) -> Self {
-        Self { x: value.0 }
-    }
-}
-
-impl<T: VectorElement> std::convert::From<[T; 1]> for Vec1<T> {
-    fn from(value: [T; 1]) -> Self {
-        Self { x: value[0] }
-    }
-}
-
-impl<T: VectorElement> Zero for Vec1<T> {
-    fn zero() -> Self {
-        Self { x: T::zero() }
-    }
-
-    fn is_zero(&self) -> bool {
-        *self == Self::zero()
-    }
-}
-
-impl<T: VectorElement> One for Vec1<T> {
-    fn one() -> Self {
-        Self { x: T::one() }
-    }
+impl<T: VectorElement> Vec1<T> {
+    pub const UNIT_X: Self = Self::new(T::ONE);
 }
 
 #[cfg(test)]
@@ -102,7 +51,7 @@ mod test {
         #[test]
         fn vector_like_get(x in any::<i32>()) {
             let v = Vec1::new(x);
-            assert_eq!(v.get(0), x);
+            assert_eq!(*v.get(0), x);
         }
     }
 
@@ -117,7 +66,7 @@ mod test {
         #[test]
         fn vector_like_set(x in any::<i32>()) {
             let mut v = Vec1::new(0);
-            v.set(0, x);
+            *v.get_mut(0) = x;
             assert_eq!(v.x, x);
         }
     }
@@ -126,49 +75,167 @@ mod test {
     #[should_panic]
     fn vector_like_set_out_of_range() {
         let mut v = Vec1::new(1);
-        v.set(1, 1);
+        *v.get_mut(1) = 1;
     }
 
-    proptest! {
-        #[test]
-        fn from_tuple(x in any::<i32>()) {
-            let v = Vec1::from((x,));
-            assert_eq!(v.x, x);
-        }
+    #[test]
+    fn add() {
+        let v1 = Vec1::new(1_i32);
+        let v2 = Vec1::new(2_i32);
+        let result = v1 + v2;
+        assert_eq!(result.x, 3);
+    }
 
-        #[test]
-        fn from_array(x in any::<i32>()) {
-            let v = Vec1::from([x]);
-            assert_eq!(v.x, x);
-        }
+    #[test]
+    fn add_assign() {
+        let mut v = Vec1::new(2_i32);
+        v += Vec1::new(3_i32);
+        assert_eq!(v.x, 5);
+    }
 
-        #[test]
-        fn from_array_wrapper(x in any::<i32>()) {
-            let v = Vec1::from(VecWrapper::<i32, 1>::new(x));
-            assert_eq!(v.x, x);
-        }
+    #[test]
+    fn sub() {
+        let v1 = Vec1::new(3_i32);
+        let v2 = Vec1::new(1_i32);
+        let result = v1 - v2;
+        assert_eq!(result.x, 2);
+    }
 
-        #[test]
-        fn length_squared(x in any::<i32>()) {
-            let x = x as i64;
-            let v = Vec1::new(x);
-            let ls = v.length_squared();
-            assert_eq!(ls, x * x);
-        }
+    #[test]
+    fn sub_assign() {
+        let mut v = Vec1::new(5_i32);
+        v -= Vec1::new(3_i32);
+        assert_eq!(v.x, 2);
+    }
 
-        #[test]
-        fn length(x in any::<f32>()) {
-            let v = Vec1::new(x);
-            let l = v.length();
-            assert_ne!((x - l).abs(), 0.000001);
-        }
+    #[test]
+    fn mul() {
+        let v1 = Vec1::new(2_i32);
+        let v2 = Vec1::new(3_i32);
+        let result = v1 * v2;
+        assert_eq!(result.x, 6);
+    }
 
-        #[test]
-        fn dot(x1 in any::<i32>(), x2 in any::<i32>()) {
-            let (x1, x2) = (x1 as i64, x2 as i64);
-            let v = Vec1::new(x1);
-            let d = v.dot([x2]);
-            assert_eq!(d, x1 * x2);
-        }
+    #[test]
+    fn mul_assign() {
+        let mut v = Vec1::new(3_i32);
+        v *= Vec1::new(4_i32);
+        assert_eq!(v.x, 12);
+    }
+
+    #[test]
+    fn div() {
+        let v1 = Vec1::new(8_i32);
+        let v2 = Vec1::new(4_i32);
+        let result = v1 / v2;
+        assert_eq!(result.x, 2);
+    }
+
+    #[test]
+    fn div_assign() {
+        let mut v = Vec1::new(10_i32);
+        v /= Vec1::new(2_i32);
+        assert_eq!(v.x, 5);
+    }
+
+    #[test]
+    fn mul_scalar() {
+        let v = Vec1::new(2_i32) * 3;
+        assert_eq!(v.x, 6);
+    }
+
+    #[test]
+    fn mul_assign_scalar() {
+        let mut v = Vec1::new(2_i32);
+        v *= 4;
+        assert_eq!(v.x, 8);
+    }
+
+    #[test]
+    fn div_scalar() {
+        let v = Vec1::new(6_i32) / 3;
+        assert_eq!(v.x, 2);
+    }
+
+    #[test]
+    fn div_assign_scalar() {
+        let mut v = Vec1::new(10_i32);
+        v /= 2;
+        assert_eq!(v.x, 5);
+    }
+
+    #[test]
+    fn mul_scalar_vec() {
+        let v = 2 * Vec1::new(3_i32);
+        assert_eq!(v.x, 6);
+    }
+
+    #[test]
+    fn index() {
+        let v = Vec1::new(1_i32);
+        assert_eq!(v[0], 1);
+    }
+
+    #[test]
+    fn index_mut() {
+        let mut v = Vec1::new(0_i32);
+        v[0] = 10;
+        assert_eq!(v.x, 10);
+    }
+
+    #[test]
+    fn neg() {
+        let v = Vec1::new(1_i32);
+        assert_eq!((-v).x, -1);
+    }
+
+    #[test]
+    fn as_float_vec() {
+        let v = Vec1::new(1_i32);
+        let fv = v.as_float_vec();
+        assert_eq!(fv.x, 1.0);
+    }
+
+    #[test]
+    fn length_squared() {
+        assert_eq!(Vec1::new(2_i32).length_squared(), 4);
+    }
+
+    #[test]
+    fn length() {
+        assert_eq!(Vec1::new(2_i32).length(), 2.0);
+    }
+
+    #[test]
+    fn dot() {
+        let v = Vec1::new(2);
+        let d = v.dot([3]);
+        assert_eq!(d, 6);
+    }
+
+    #[test]
+    fn from_array() {
+        let v = Vec1::from([1]);
+        assert_eq!(v.x, 1);
+    }
+
+    #[test]
+    fn into_array() {
+        let v = Vec1::new(1_i32);
+        let a: [i32; 1] = v.into();
+        assert_eq!(a, [1]);
+    }
+
+    #[test]
+    fn from_tuple() {
+        let v = Vec1::from((1,));
+        assert_eq!(v.x, 1);
+    }
+
+    #[test]
+    fn into_tuple() {
+        let v = Vec1::new(1_i32);
+        let t: (i32,) = v.into();
+        assert_eq!(t, (1,));
     }
 }

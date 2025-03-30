@@ -8,6 +8,11 @@ pub trait Zero {
     fn is_near_zero(&self) -> bool;
 }
 
+pub trait AsFloatingPoint: Default {
+    type Output: ::num::Float + One + Zero;
+    fn as_floating_point(&self) -> Self::Output;
+}
+
 // macro: impl One and Zero for primitive
 #[doc(hidden)]
 macro_rules! impl_one {
@@ -35,6 +40,19 @@ macro_rules! impl_zero {
 
             fn is_near_zero(&self) -> bool {
                 self.abs() < 1e-8
+            }
+        }
+    };
+}
+
+#[doc(hidden)]
+macro_rules! impl_as_float {
+    ($type: ty, $ftype: ty) => {
+        impl AsFloatingPoint for $type {
+            type Output = $ftype;
+
+            fn as_floating_point(&self) -> Self::Output {
+                *self as $ftype
             }
         }
     };
@@ -69,3 +87,18 @@ impl_zero!(u128, integer);
 impl_zero!(usize, integer);
 impl_zero!(f32, floating_point);
 impl_zero!(f64, floating_point);
+
+impl_as_float!(i8, f64);
+impl_as_float!(i16, f64);
+impl_as_float!(i32, f64);
+impl_as_float!(i64, f64);
+impl_as_float!(i128, f64);
+impl_as_float!(isize, f64);
+impl_as_float!(u8, f64);
+impl_as_float!(u16, f64);
+impl_as_float!(u32, f64);
+impl_as_float!(u64, f64);
+impl_as_float!(u128, f64);
+impl_as_float!(usize, f64);
+impl_as_float!(f32, f32);
+impl_as_float!(f64, f64);

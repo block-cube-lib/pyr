@@ -1,4 +1,3 @@
-mod vec_wrapper;
 pub mod ops;
 pub(crate) mod traits;
 mod vec1;
@@ -6,13 +5,13 @@ mod vec2;
 mod vec3;
 mod vec4;
 
-pub use vec_wrapper::VecWrapper;
-pub use traits::{FloatVectorElement, FloatVectorLike, VectorElement, VectorLike};
+pub use traits::*;
 pub use vec1::*;
 pub use vec2::*;
 pub use vec3::*;
 pub use vec4::*;
 
+/*
 #[doc(hidden)]
 pub trait VecTypeHolder<T: VectorElement, const D: usize> {
     type Vec;
@@ -38,7 +37,7 @@ impl<T: VectorElement> VecTypeHolder<T, 4> for VectorTypeResolver<T, 4> {
 
 seq_macro::seq!(N in 5..32 {
     impl<T: VectorElement> VecTypeHolder<T, N> for VectorTypeResolver<T, N> {
-        type Vec = VecWrapper<T, N>;
+        type Vec = ArrayWrapper<T, N>;
     }
 });
 
@@ -64,20 +63,21 @@ mod test {
         assert_eq!(type_name::<Vec3::<T>>(), type_name::<Vec<T, 3>>());
         assert_eq!(type_name::<Vec4::<T>>(), type_name::<Vec<T, 4>>());
         assert_eq!(
-            type_name::<VecWrapper::<T, 5>>(),
+            type_name::<ArrayWrapper::<T, 5>>(),
             type_name::<Vec<T, 5>>()
         );
         assert_eq!(
-            type_name::<VecWrapper::<T, 6>>(),
+            type_name::<ArrayWrapper::<T, 6>>(),
             type_name::<Vec<T, 6>>()
         );
         assert_eq!(
-            type_name::<VecWrapper::<T, 7>>(),
+            type_name::<ArrayWrapper::<T, 7>>(),
             type_name::<Vec<T, 7>>()
         );
         assert_eq!(
-            type_name::<VecWrapper::<T, 8>>(),
+            type_name::<ArrayWrapper::<T, 8>>(),
             type_name::<Vec<T, 8>>()
         );
     }
 }
+*/

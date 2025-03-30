@@ -2,7 +2,6 @@ use super::traits::{FloatVectorElement, VectorElement, VectorLike};
 use super::vec1::Vec1;
 use pyr_math_derive::Vector;
 use serde::{Deserialize, Serialize};
-use std::fmt;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Vector, Serialize, Deserialize)]
@@ -12,65 +11,43 @@ pub struct Vec2<T: VectorElement> {
 }
 
 impl<T: VectorElement> Vec2<T> {
+    pub const UNIT_X: Self = Self {
+        x: T::ONE,
+        y: T::ZERO,
+    };
+    pub const UNIT_Y: Self = Self {
+        x: T::ZERO,
+        y: T::ONE,
+    };
+
     pub const fn new(x: T, y: T) -> Self {
         Self { x, y }
-    }
-
-    pub fn unit_x() -> Self {
-        Self {
-            x: T::one(),
-            y: T::zero(),
-        }
-    }
-
-    pub fn unit_y() -> Self {
-        Self {
-            x: T::zero(),
-            y: T::one(),
-        }
     }
 }
 
 impl<T: VectorElement> VectorLike<2> for Vec2<T> {
     type ElementType = T;
 
-    fn get(&self, index: usize) -> T {
+    fn get(&self, index: usize) -> &T {
         match index {
-            0 => self.x,
-            1 => self.y,
+            0 => &self.x,
+            1 => &self.y,
             _ => panic!("out of range"),
         }
     }
 
-    fn set(&mut self, index: usize, value: T) {
+    fn get_mut(&mut self, index: usize) -> &mut T {
         match index {
-            0 => self.x = value,
-            1 => self.y = value,
+            0 => &mut self.x,
+            1 => &mut self.y,
             _ => panic!("out of range"),
         }
-    }
-
-    fn from_array(array: [T; 2]) -> Self {
-        Self::new(array[0], array[1])
-    }
-    fn into_array(self) -> [T; 2] {
-        [self.x, self.y]
-    }
-
-    fn into_float_array(self) -> [T::FloatCalcType; 2] {
-        [self.x.as_float_type(), self.y.as_float_type()]
-    }
-}
-
-impl<T: VectorElement + fmt::Display> fmt::Display for Vec2<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}, {}]", self.x, self.y)
     }
 }
 
 impl<T: VectorElement> Vec2<T> {
     pub fn cross(&self, rhs: impl VectorLike<2, ElementType = T>) -> T {
-        self.x * rhs.get(1) - self.y * rhs.get(0)
+        self.x * *rhs.get(1) - self.y * *rhs.get(0)
     }
 }
 
@@ -84,21 +61,11 @@ impl<T: FloatVectorElement> Vec2<T> {
     pub fn signed_angle(&self, rhs: Vec2<T>) -> T {
         let angle = self.angle(rhs);
         let cross = self.cross(rhs);
-        if cross < T::ZERO {
-            -angle
-        } else {
-            angle
-        }
+        if cross < T::ZERO { -angle } else { angle }
     }
 
     pub fn reflect(&self, normal: Vec2<T>) -> Self {
         *self - normal * self.dot(normal) * T::from(2.0).unwrap()
-    }
-}
-
-impl<T: VectorElement> From<(T, T)> for Vec2<T> {
-    fn from((x, y): (T, T)) -> Self {
-        Self { x, y }
     }
 }
 
@@ -121,8 +88,8 @@ mod test {
     #[test]
     fn vector_element_get() {
         let v = Vec2::<i32> { x: 1, y: 2 };
-        assert_eq!(v.get(0), 1);
-        assert_eq!(v.get(1), 2);
+        assert_eq!(*v.get(0), 1);
+        assert_eq!(*v.get(1), 2);
     }
 
     #[test]

@@ -20,18 +20,6 @@ impl<T: VectorElement> Vec4<T> {
 }
 
 impl<T: VectorElement> Vec4<T> {
-    /// ```
-    /// let zero = pyr::math::Vec4::<i32>::ZERO;
-    /// assert_eq!((zero.x, zero.y, zero.z, zero.w), (0, 0, 0, 0));
-    /// ```
-    pub const ZERO: Self = Self::new(T::ZERO, T::ZERO, T::ZERO, T::ZERO);
-
-    /// ```
-    /// let one = pyr::math::Vec4::<i32>::ONE;
-    /// assert_eq!((one.x, one.y, one.z, one.w), (1, 1, 1, 1));
-    /// ```
-    pub const ONE: Self = Self::new(T::ONE, T::ONE, T::ONE, T::ONE);
-
     /// A unit vector pointing along the positive X axis.
     /// ```
     /// let unit_x = pyr::math::Vec4::<i32>::UNIT_X;
@@ -64,35 +52,24 @@ impl<T: VectorElement> Vec4<T> {
 impl<T: VectorElement> VectorLike<4> for Vec4<T> {
     type ElementType = T;
 
-    fn get(&self, index: usize) -> T {
+    fn get(&self, index: usize) -> &T {
         match index {
-            0 => self.x,
-            1 => self.y,
-            2 => self.z,
-            3 => self.w,
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            3 => &self.w,
             _ => panic!("out of range"),
         }
     }
 
-    fn set(&mut self, index: usize, value: T) {
+    fn get_mut(&mut self, index: usize) -> &mut T {
         match index {
-            0 => self.x = value,
-            1 => self.y = value,
-            2 => self.z = value,
-            3 => self.w = value,
+            0 => &mut self.x,
+            1 => &mut self.y,
+            2 => &mut self.z,
+            3 => &mut self.w,
             _ => panic!("out of range"),
         }
-    }
-
-    fn from_array(array: [T; 4]) -> Self {
-        Self::new(array[0], array[1], array[2], array[3])
-    }
-    fn into_array(self) -> [T; 4] {
-        [self.x, self.y, self.z, self.w]
-    }
-
-    fn into_float_array(self) -> [T::FloatCalcType; 4] {
-        [self.x.as_float_type(), self.y.as_float_type(), self.z.as_float_type(), self.w.as_float_type()]
     }
 }
 
@@ -106,7 +83,7 @@ impl<T: VectorElement> Vec4<T> {
     /// ```
     pub fn from_v1_with_yzw<V: VectorLike<1, ElementType = T>>(v: V, y: T, z: T, w: T) -> Self {
         Self {
-            x: v.get(0),
+            x: *v.get(0),
             y,
             z,
             w,
@@ -120,10 +97,10 @@ impl<T: VectorElement> Vec4<T> {
     /// let v4 = Vec4::from_v2_with_zw(v2, 3, 4);
     /// assert_eq!(v4, Vec4::new(1, 2, 3, 4));
     /// ```
-    pub fn from_v2_with_zw<V: VectorLike<1, ElementType = T>>(v: V, z: T, w: T) -> Self {
+    pub fn from_v2_with_zw<V: VectorLike<2, ElementType = T>>(v: V, z: T, w: T) -> Self {
         Self {
-            x: v.get(0),
-            y: v.get(1),
+            x: *v.get(0),
+            y: *v.get(1),
             z,
             w,
         }
@@ -136,11 +113,11 @@ impl<T: VectorElement> Vec4<T> {
     /// let v4 = Vec4::from_v3_with_w(v3, 4);
     /// assert_eq!(v4, Vec4::new(1, 2, 3, 4));
     /// ```
-    pub fn from_v3_with_w<V: VectorLike<1, ElementType = T>>(v: V, w: T) -> Self {
+    pub fn from_v3_with_w<V: VectorLike<3, ElementType = T>>(v: V, w: T) -> Self {
         Self {
-            x: v.get(0),
-            y: v.get(1),
-            z: v.get(2),
+            x: *v.get(0),
+            y: *v.get(1),
+            z: *v.get(2),
             w,
         }
     }

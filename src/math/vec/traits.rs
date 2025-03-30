@@ -11,52 +11,34 @@ pub trait VectorElement:
     + Default
     + crate::num::One
     + crate::num::Zero
+    + crate::num::AsFloatingPoint
 {
-    type FloatCalcType: FloatVectorElement;
-    fn as_float_type(&self) -> Self::FloatCalcType;
 }
 
-pub trait FloatVectorElement: VectorElement<FloatCalcType = Self> + num::Float {}
+pub trait FloatVectorElement: VectorElement + num::Float + crate::num::AsFloatingPoint<Output = Self> {}
 
 /// A trait for types that can act like a vector.
-pub trait VectorLike<const DIMENSION: usize>: Clone + Copy + PartialEq {
+pub trait VectorLike<const DIMENSION: usize>:
+    Clone
+    + Copy
+    + PartialEq
+    + From<[Self::ElementType; DIMENSION]>
+    + Into<[Self::ElementType; DIMENSION]>
+{
     type ElementType: VectorElement;
 
-    fn get(&self, index: usize) -> Self::ElementType;
-
-    fn set(&mut self, index: usize, value: Self::ElementType);
-
-    fn from_array(array: [Self::ElementType; DIMENSION]) -> Self;
-    fn into_array(self) -> [Self::ElementType; DIMENSION];
-
-    fn into_float_array(self) -> [<Self::ElementType as VectorElement>::FloatCalcType; DIMENSION];
-
-    fn into_other_vector<V: VectorLike<DIMENSION, ElementType = Self::ElementType>>(self) -> V {
-        let array = self.into_array();
-        V::from_array(array)
-    }
+    fn get(&self, index: usize) -> &Self::ElementType;
+    fn get_mut(&mut self, index: usize) -> &mut Self::ElementType;
 }
 
 impl<T: VectorElement, const DIMENSION: usize> VectorLike<DIMENSION> for [T; DIMENSION] {
     type ElementType = T;
 
-    fn get(&self, index: usize) -> Self::ElementType {
-        (*self)[index]
+    fn get(&self, index: usize) -> &Self::ElementType {
+        &self[index]
     }
-
-    fn set(&mut self, index: usize, value: T) {
-        (*self)[index] = value;
-    }
-
-    fn from_array(array: [T; DIMENSION]) -> Self {
-        array
-    }
-    fn into_array(self) -> [T; DIMENSION] {
-        self
-    }
-
-    fn into_float_array(self) -> [T::FloatCalcType; DIMENSION] {
-        self.map(|x| x.as_float_type())
+    fn get_mut(&mut self, index: usize) -> &mut Self::ElementType {
+        &mut self[index]
     }
 }
 
@@ -71,13 +53,7 @@ where
 #[doc(hidden)]
 macro_rules! impl_vector_element {
     ($type: ty, $f: ty) => {
-        impl VectorElement for $type {
-            type FloatCalcType = $f;
-
-            fn as_float_type(&self) -> Self::FloatCalcType {
-                *self as $f
-            }
-        }
+        impl VectorElement for $type {}
     };
 }
 impl_vector_element!(f32, f32);
@@ -104,29 +80,18 @@ macro_rules! impl_vector_like_for_tuple {
             impl<T: VectorElement> VectorLike<$n> for (#(T,)*) {
                 type ElementType = T;
 
-                fn get(&self, index: usize) -> T {
+                fn get(&self, index: usize) -> &T {
                     match index {
-                        #( N => self.N, )*
+                        #( N => &self.N, )*
                         _ => panic!("out of range"),
                     }
                 }
 
-                fn set(&mut self, index: usize, value: T) {
+                fn get_mut(&mut self, index: usize) -> &mut T {
                         match index {
-                            #( N => self.N = value, )*
+                            #( N => &mut self.N, )*
                             _ => panic!("out of range"),
                         }
-                }
-
-                fn from_array(array: [T; $n]) -> Self {
-                    (#( array[N], )*)
-                }
-                fn into_array(self) -> [T; $n] {
-                    [ #( self.N, )* ]
-                }
-
-                fn into_float_array(self) -> [T::FloatCalcType; $n] {
-                    [ #( self.N.as_float_type(), )* ]
                 }
             }
         });
@@ -143,7 +108,7 @@ mod test {
     #[test]
     fn vector_like_get_tuple_1() {
         let a = (1,);
-        assert_eq!(a.get(0), 1);
+        assert_eq!(*a.get(0), 1);
     }
 
     #[test]
@@ -154,58 +119,58 @@ mod test {
     }
 
     #[test]
-    fn vector_like_set_tuple_1() {
+    fn vector_like_get_mut_tuple_1() {
         let mut a = (0,);
         assert_eq!(0, 0);
-        a.set(0, 1);
-        assert_eq!(a.get(0), 1);
+        *a.get_mut(0) = 1;
+        assert_eq!(*a.get(0), 1);
     }
 
     #[test]
     #[should_panic(expected = "out of range")]
-    fn vector_like_set_tuple_1_out_of_range() {
+    fn vector_like_get_mut_tuple_1_out_of_range() {
         let mut a = (0,);
-        a.set(1, 1);
+        *a.get_mut(1) = 1;
     }
 
     #[test]
     fn vector_like_get_tuple_2() {
         let a = (1, 2);
-        assert_eq!(a.get(0), 1);
-        assert_eq!(a.get(1), 2);
+        assert_eq!(*a.get(0), 1);
+        assert_eq!(*a.get(1), 2);
     }
 
     #[test]
     #[should_panic(expected = "out of range")]
     fn vector_like_get_tuple_2_out_of_range() {
         let a = (1, 2);
-        let _ = a.get(2);
+        let _ = *a.get(2);
     }
 
     #[test]
-    fn vector_like_set_tuple_2() {
+    fn vector_like_get_mut_tuple_2() {
         let mut a = (0, 0);
-        assert_eq!(a.get(0), 0);
-        assert_eq!(a.get(1), 0);
-        a.set(0, 10);
-        a.set(1, 20);
-        assert_eq!(a.get(0), 10);
-        assert_eq!(a.get(1), 20);
+        assert_eq!(*a.get(0), 0);
+        assert_eq!(*a.get(1), 0);
+        *a.get_mut(0) = 10;
+        *a.get_mut(1) = 20;
+        assert_eq!(a.0, 10);
+        assert_eq!(a.1, 20);
     }
 
     #[test]
     #[should_panic(expected = "out of range")]
-    fn vector_like_set_tuple_2_out_of_range() {
+    fn vector_like_get_mut_tuple_2_out_of_range() {
         let mut a = (1, 2);
-        a.set(2, 1);
+        *a.get_mut(2) = 1;
     }
 
     #[test]
     fn vector_like_get_tuple_3() {
         let a = (1, 2, 3);
-        assert_eq!(a.get(0), 1);
-        assert_eq!(a.get(1), 2);
-        assert_eq!(a.get(2), 3);
+        assert_eq!(*a.get(0), 1);
+        assert_eq!(*a.get(1), 2);
+        assert_eq!(*a.get(2), 3);
     }
 
     #[test]
@@ -218,28 +183,28 @@ mod test {
     #[test]
     fn vector_like_set_tuple_3() {
         let mut a = (0, 0, 0);
-        assert_eq!(a.get(0), 0);
-        assert_eq!(a.get(1), 0);
-        assert_eq!(a.get(2), 0);
-        a.set(0, 10);
-        a.set(1, 20);
-        a.set(2, 30);
-        assert_eq!(a.get(0), 10);
-        assert_eq!(a.get(1), 20);
-        assert_eq!(a.get(2), 30);
+        assert_eq!(*a.get(0), 0);
+        assert_eq!(*a.get(1), 0);
+        assert_eq!(*a.get(2), 0);
+        *a.get_mut(0) = 10;
+        *a.get_mut(1) = 20;
+        *a.get_mut(2) = 30;
+        assert_eq!(a.0, 10);
+        assert_eq!(a.1, 20);
+        assert_eq!(a.2, 30);
     }
 
     #[test]
     #[should_panic(expected = "out of range")]
-    fn vector_like_set_tuple_3_out_of_range() {
+    fn vector_like_get_mut_tuple_3_out_of_range() {
         let mut a = (1, 2, 3);
-        a.set(3, 1);
+        *a.get_mut(3) = 1;
     }
 
     #[test]
     fn vector_like_get_array_1() {
         let a = [10];
-        assert_eq!(a.get(0), 10);
+        assert_eq!(*a.get(0), 10);
     }
 
     #[test]
@@ -250,25 +215,25 @@ mod test {
     }
 
     #[test]
-    fn vector_like_set_array_1() {
+    fn vector_like_get_mut_array_1() {
         let mut a = [0];
-        assert_eq!(a.get(0), 0);
-        a.set(0, 10);
-        assert_eq!(a.get(0), 10);
+        assert_eq!(a[0], 0);
+        *a.get_mut(0) = 10;
+        assert_eq!(a[0], 10);
     }
 
     #[test]
     #[should_panic]
     fn vector_like_set_array_1_out_of_range() {
         let mut a = [0];
-        a.set(1, 1);
+        *a.get_mut(1) = 1;
     }
 
     #[test]
     fn vector_like_get_array_2() {
         let a = [10, 11];
-        assert_eq!(a.get(0), 10);
-        assert_eq!(a.get(1), 11);
+        assert_eq!(*a.get(0), 10);
+        assert_eq!(*a.get(1), 11);
     }
 
     #[test]
@@ -281,138 +246,138 @@ mod test {
     #[test]
     fn vector_like_set_array_2() {
         let mut a = [0, 0];
-        assert_eq!(a.get(0), 0);
-        assert_eq!(a.get(1), 0);
-        a.set(0, 10);
-        a.set(1, 20);
-        assert_eq!(a.get(0), 10);
-        assert_eq!(a.get(1), 20);
+        assert_eq!(*a.get(0), 0);
+        assert_eq!(*a.get(1), 0);
+        *a.get_mut(0) = 10;
+        *a.get_mut(1) = 20;
+        assert_eq!(*a.get(0), 10);
+        assert_eq!(*a.get(1), 20);
     }
 
     #[test]
     #[should_panic]
     fn vector_like_set_array_2_out_of_range() {
         let mut a = [0, 0];
-        a.set(2, 1);
+        *a.get_mut(2) = 2;
     }
 
     #[test]
     fn vector_like_get_array_3() {
         let a = [10, 11, 12];
-        assert_eq!(a.get(0), 10);
-        assert_eq!(a.get(1), 11);
-        assert_eq!(a.get(2), 12);
+        assert_eq!(*a.get(0), 10);
+        assert_eq!(*a.get(1), 11);
+        assert_eq!(*a.get(2), 12);
     }
 
     #[test]
     #[should_panic]
     fn vector_like_get_array_3_out_of_range() {
         let a = [10, 11, 12];
-        let _ = a.get(3);
+        let _ = *a.get(3);
     }
 
     #[test]
     fn vector_like_set_array_3() {
         let mut a = [0, 0, 0];
-        assert_eq!(a.get(0), 0);
-        assert_eq!(a.get(1), 0);
-        assert_eq!(a.get(2), 0);
-        a.set(0, 10);
-        a.set(1, 20);
-        a.set(2, 30);
-        assert_eq!(a.get(0), 10);
-        assert_eq!(a.get(1), 20);
-        assert_eq!(a.get(2), 30);
+        assert_eq!(*a.get(0), 0);
+        assert_eq!(*a.get(1), 0);
+        assert_eq!(*a.get(2), 0);
+        *a.get_mut(0) = 10;
+        *a.get_mut(1) = 20;
+        *a.get_mut(2) = 30;
+        assert_eq!(*a.get(0), 10);
+        assert_eq!(*a.get(1), 20);
+        assert_eq!(*a.get(2), 30);
     }
 
     #[test]
     #[should_panic]
     fn vector_like_set_array_3_out_of_range() {
         let mut a = [0, 0, 0];
-        a.set(3, 1);
+        *a.get_mut(3) = 3;
     }
 
     #[test]
     fn vector_like_get_array_4() {
         let a = [10, 11, 12, 13];
-        assert_eq!(a.get(0), 10);
-        assert_eq!(a.get(1), 11);
-        assert_eq!(a.get(2), 12);
-        assert_eq!(a.get(3), 13);
+        assert_eq!(*a.get(0), 10);
+        assert_eq!(*a.get(1), 11);
+        assert_eq!(*a.get(2), 12);
+        assert_eq!(*a.get(3), 13);
     }
 
     #[test]
     #[should_panic]
     fn vector_like_get_array_4_out_of_range() {
         let a = [10, 11, 12, 13];
-        let _ = a.get(4);
+        let _ = *a.get(4);
     }
 
     #[test]
     fn vector_like_set_array_4() {
         let mut a = [0, 0, 0, 0];
-        assert_eq!(a.get(0), 0);
-        assert_eq!(a.get(1), 0);
-        assert_eq!(a.get(2), 0);
-        assert_eq!(a.get(3), 0);
-        a.set(0, 10);
-        a.set(1, 20);
-        a.set(2, 30);
-        a.set(3, 40);
-        assert_eq!(a.get(0), 10);
-        assert_eq!(a.get(1), 20);
-        assert_eq!(a.get(2), 30);
-        assert_eq!(a.get(3), 40);
+        assert_eq!(*a.get(0), 0);
+        assert_eq!(*a.get(1), 0);
+        assert_eq!(*a.get(2), 0);
+        assert_eq!(*a.get(3), 0);
+        *a.get_mut(0) = 10;
+        *a.get_mut(1) = 20;
+        *a.get_mut(2) = 30;
+        *a.get_mut(3) = 40;
+        assert_eq!(*a.get(0), 10);
+        assert_eq!(*a.get(1), 20);
+        assert_eq!(*a.get(2), 30);
+        assert_eq!(*a.get(3), 40);
     }
 
     #[test]
     #[should_panic]
     fn vector_like_set_array_4_out_of_range() {
         let mut a = [0, 0, 0, 0];
-        a.set(4, 1);
+        *a.get_mut(4) = 4;
     }
 
     #[test]
     fn vector_like_get_array_5() {
         let a = [10, 11, 12, 13, 14];
-        assert_eq!(a.get(0), 10);
-        assert_eq!(a.get(1), 11);
-        assert_eq!(a.get(2), 12);
-        assert_eq!(a.get(3), 13);
-        assert_eq!(a.get(4), 14);
+        assert_eq!(*a.get(0), 10);
+        assert_eq!(*a.get(1), 11);
+        assert_eq!(*a.get(2), 12);
+        assert_eq!(*a.get(3), 13);
+        assert_eq!(*a.get(4), 14);
     }
 
     #[test]
     #[should_panic]
     fn vector_like_get_array_5_out_of_range() {
         let a = [10, 11, 12, 13, 14];
-        let _ = a.get(5);
+        let _ = *a.get(5);
     }
 
     #[test]
     fn vector_like_set_array_5() {
         let mut a = [0, 0, 0, 0, 0];
-        assert_eq!(a.get(0), 0);
-        assert_eq!(a.get(1), 0);
-        assert_eq!(a.get(2), 0);
-        assert_eq!(a.get(3), 0);
-        assert_eq!(a.get(4), 0);
-        a.set(0, 10);
-        a.set(1, 20);
-        a.set(2, 30);
-        a.set(3, 40);
-        a.set(4, 50);
-        assert_eq!(a.get(0), 10);
-        assert_eq!(a.get(1), 20);
-        assert_eq!(a.get(2), 30);
-        assert_eq!(a.get(3), 40);
-        assert_eq!(a.get(4), 50);
+        assert_eq!(*a.get(0), 0);
+        assert_eq!(*a.get(1), 0);
+        assert_eq!(*a.get(2), 0);
+        assert_eq!(*a.get(3), 0);
+        assert_eq!(*a.get(4), 0);
+        *a.get_mut(0) = 10;
+        *a.get_mut(1) = 20;
+        *a.get_mut(2) = 30;
+        *a.get_mut(3) = 40;
+        *a.get_mut(4) = 50;
+        assert_eq!(*a.get(0), 10);
+        assert_eq!(*a.get(1), 20);
+        assert_eq!(*a.get(2), 30);
+        assert_eq!(*a.get(3), 40);
+        assert_eq!(*a.get(4), 50);
     }
 
     #[test]
     #[should_panic]
     fn vector_like_set_array_5_out_of_range() {
         let mut a = [0, 0, 0, 0, 0];
-        a.set(5, 1);
+        *a.get_mut(5) = 5;
     }
 }

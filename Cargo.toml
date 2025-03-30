@@ -2,7 +2,7 @@
 name = "pyr"
 version = "0.1.0"
 authors = ["block <block.cube.lib@gmail.com>"]
-edition = "2021"
+edition = "2024"
 
 [workspace]
 members = ["./", "math-derive"]
@@ -23,6 +23,7 @@ pyr-math-derive = { workspace = true }
 proptest = "1.2.0"
 serde_json = "1.0"
 criterion = "0.5.1"
+pretty_assertions = "1.4.1"
 
 [[bench]]
 name = "benchmark"
