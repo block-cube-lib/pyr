@@ -8,8 +8,8 @@ where
     In: VectorLike<N>,
 {
     let mut result = [In::ElementType::ZERO.as_floating_point(); N];
-    for i in 0..N {
-        result[i] = v.get(i).as_floating_point();
+    for (i, value) in result.iter_mut().enumerate().take(N) {
+        *value = v.get(i).as_floating_point();
     }
     result
 }
@@ -111,8 +111,8 @@ where
 {
     let len = length(v);
     let mut result = into_floating_point_array(v);
-    for i in 0..N {
-        result[i] = result[i] / len;
+    for value in result.iter_mut().take(N) {
+        *value /= len;
     }
     result.into()
 }

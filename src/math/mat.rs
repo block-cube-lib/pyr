@@ -99,8 +99,8 @@ impl<T: MatrixElement, const ROW: usize, const COL: usize> Mat<T, ROW, COL> {
     /// ```
     pub fn row(&self, n: usize) -> [T; ROW] {
         let mut v = [T::ZERO; ROW];
-        for i in 0..ROW {
-            v[i] = self.elements[i][n];
+        for (i, v_elem) in v.iter_mut().enumerate().take(ROW) {
+            *v_elem = self.elements[i][n];
         }
         v
     }
