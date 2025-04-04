@@ -2,7 +2,7 @@
 name = "pyr"
 version = "0.1.0"
 authors = ["block <block.cube.lib@gmail.com>"]
-edition = "2024"
+edition = "2021"
 
 [workspace]
 members = ["./", "math-derive"]
