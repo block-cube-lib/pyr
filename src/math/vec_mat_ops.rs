@@ -40,6 +40,16 @@ impl_vec_mul_mat!(Vec4, 4, 2, Vec2, 0, 1);
 impl_vec_mul_mat!(Vec4, 4, 3, Vec3, 0, 1, 2);
 impl_vec_mul_mat!(Vec4, 4, 4, Vec4, 0, 1, 2, 3);
 
+impl<T: VectorElement> Mul<Mat<T, 4, 4>> for Vec3<T> {
+    type Output = Vec3<T>;
+
+    fn mul(self, rhs: Mat<T, 4, 4>) -> Self::Output {
+        let v4 = Vec4::new(self.x, self.y, self.z, T::ONE);
+        let v = v4 * rhs;
+        Vec3::new(v.x, v.y, v.z)
+    }
+}
+
 macro_rules! impl_mat_mul_vec {
     ($VecN:ident, $MatRows:expr, $MatCols:expr, $VecOutput:ident, $($index:expr),*) => {
         impl<T: VectorElement> Mul<$VecN<T>> for Mat<T, $MatRows, $MatCols> {
@@ -73,6 +83,16 @@ impl_mat_mul_vec!(Vec4, 1, 4, Vec1, 0);
 impl_mat_mul_vec!(Vec4, 2, 4, Vec2, 0, 1);
 impl_mat_mul_vec!(Vec4, 3, 4, Vec3, 0, 1, 2);
 impl_mat_mul_vec!(Vec4, 4, 4, Vec4, 0, 1, 2, 3);
+
+impl<T: VectorElement> Mul<Vec3<T>> for Mat<T, 4, 4> {
+    type Output = Vec3<T>;
+
+    fn mul(self, rhs: Vec3<T>) -> Self::Output {
+        let v4 = Vec4::new(rhs.x, rhs.y, rhs.z, T::ONE);
+        let v = self * v4;
+        Vec3::new(v.x, v.y, v.z)
+    }
+}
 
 #[cfg(test)]
 mod test {
@@ -119,5 +139,12 @@ mod test {
                 x * m13 + y * m23 + z * m33,
             )
         );
+    }
+
+    #[test]
+    fn mul_vec3_mat4x4() {
+        let m = Mat::new([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [1, 2, 3, 1]]);
+        let v = Vec3::new(1, 2, 3);
+        assert_eq!(v * m, Vec3::new(2, 4, 6));
     }
 }

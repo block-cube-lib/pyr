@@ -18,6 +18,18 @@ impl<T: VectorElement> Vec3<T> {
         Self { x, y, z }
     }
 
+    /// Create a new vector from VectorLike.
+    pub fn from_vector<V>(v: V) -> Self
+    where
+        V: VectorLike<3, ElementType = T>,
+    {
+        Self {
+            x: *v.get(0),
+            y: *v.get(1),
+            z: *v.get(2),
+        }
+    }
+
     /// Create a new vector from a 1-dimensional vector.
     /// ```
     /// use pyr::math::vec::{Vec1, Vec3};
@@ -99,7 +111,7 @@ impl<T: VectorElement> VectorLike<3> for Vec3<T> {
 impl<T: VectorElement + std::ops::Neg<Output = T>> Vec3<T> {
     /// Get the cross product of two vectors.
     pub fn cross(&self, rhs: impl VectorLike<3, ElementType = T>) -> Self {
-        #[cfg(feature = "right_handed_coordinates")]
+        #[cfg(feature = "left_handed_coordinates")]
         {
             Self {
                 x: *self.get(1) * *rhs.get(2) - *self.get(2) * *rhs.get(1),
@@ -107,7 +119,7 @@ impl<T: VectorElement + std::ops::Neg<Output = T>> Vec3<T> {
                 z: *self.get(0) * *rhs.get(1) - *self.get(1) * *rhs.get(0),
             }
         }
-        #[cfg(feature = "left_handed_coordinates")]
+        #[cfg(feature = "right_handed_coordinates")]
         {
             Self {
                 x: *self.get(2) * *rhs.get(1) - *self.get(1) * *rhs.get(2),
@@ -226,24 +238,6 @@ mod test {
         #[cfg(feature = "right_handed_coordinates")]
         #[test]
         fn cross(v1 in gen_vec3::<i32>(), v2 in gen_vec3()) {
-        {
-            let v1 = Vec3::new(1, 0, 0_i64); // x axis
-            let v2 = Vec3::new(0, 1, 0); // y axis
-            let v3 = v1.cross(v2);
-            assert_eq!(v3, Vec3::new(0, 0, 1))
-        }
-        {
-            let v1 = Vec3::new(0, 1, 0); // y axis
-            let v2 = Vec3::new(0, 0, 1_i64); // z axis
-            let v3 = v1.cross(v2);
-            assert_eq!(v3, Vec3::new(1, 0, 0))
-        }
-        {
-            let v1 = Vec3::new(0, 0, 1); // z axis
-            let v2 = Vec3::new(1, 0, 0_i64); // z axis
-            let v3 = v1.cross(v2);
-            assert_eq!(v3, Vec3::new(0, 1, 0))
-        }
             let v1 = convert::<i32, i64>(v1);
             let v2 = convert::<i32, i64>(v2);
             let c1 = v1.cross(v2);
@@ -254,24 +248,6 @@ mod test {
         #[cfg(feature = "left_handed_coordinates")]
         #[test]
         fn cross(v1 in gen_vec3::<i32>(), v2 in gen_vec3()) {
-        {
-            let v1 = Vec3::new(1, 0, 0_i64); // x axis
-            let v2 = Vec3::new(0, 1, 0); // y axis
-            let v3 = v1.cross(v2);
-            assert_eq!(v3, Vec3::new(0, 0, -1))
-        }
-        {
-            let v1 = Vec3::new(0, 1, 0); // y axis
-            let v2 = Vec3::new(0, 0, 1_i64); // z axis
-            let v3 = v1.cross(v2);
-            assert_eq!(v3, Vec3::new(-1, 0, 0))
-        }
-        {
-            let v1 = Vec3::new(0, 0, 1); // z axis
-            let v2 = Vec3::new(1, 0, 0_i64); // z axis
-            let v3 = v1.cross(v2);
-            assert_eq!(v3, Vec3::new(0, -1, 0))
-        }
             let v1 = convert::<i32, i64>(v1);
             let v2 = convert::<i32, i64>(v2);
             let c1 = v1.cross(v2);
@@ -314,6 +290,52 @@ mod test {
         fn signed_angle(v1 in gen_non_zero_normal_f32_vec3(), v2 in gen_non_zero_normal_f32_vec3()) {
             let angle = v1.angle(v2);
             assert!(-std::f32::consts::PI <= angle && angle <= std::f32::consts::PI);
+        }
+    }
+
+    #[cfg(feature = "left_handed_coordinates")]
+    #[test]
+    fn cross_axis() {
+        {
+            let v1 = Vec3::new(1, 0, 0_i64); // x axis
+            let v2 = Vec3::new(0, 1, 0); // y axis
+            let v3 = v1.cross(v2);
+            assert_eq!(v3, Vec3::new(0, 0, 1))
+        }
+        {
+            let v1 = Vec3::new(0, 1, 0); // y axis
+            let v2 = Vec3::new(0, 0, 1_i64); // z axis
+            let v3 = v1.cross(v2);
+            assert_eq!(v3, Vec3::new(1, 0, 0))
+        }
+        {
+            let v1 = Vec3::new(0, 0, 1); // z axis
+            let v2 = Vec3::new(1, 0, 0_i64); // x axis
+            let v3 = v1.cross(v2);
+            assert_eq!(v3, Vec3::new(0, 1, 0))
+        }
+    }
+
+    #[cfg(feature = "right_handed_coordinates")]
+    #[test]
+    fn cross_axis() {
+        {
+            let v1 = Vec3::new(1, 0, 0_i64); // x axis
+            let v2 = Vec3::new(0, 1, 0); // y axis
+            let v3 = v1.cross(v2);
+            assert_eq!(v3, Vec3::new(0, 0, -1))
+        }
+        {
+            let v1 = Vec3::new(0, 1, 0); // y axis
+            let v2 = Vec3::new(0, 0, 1_i64); // z axis
+            let v3 = v1.cross(v2);
+            assert_eq!(v3, Vec3::new(-1, 0, 0))
+        }
+        {
+            let v1 = Vec3::new(0, 0, 1); // z axis
+            let v2 = Vec3::new(1, 0, 0_i64); // z axis
+            let v3 = v1.cross(v2);
+            assert_eq!(v3, Vec3::new(0, -1, 0))
         }
     }
 

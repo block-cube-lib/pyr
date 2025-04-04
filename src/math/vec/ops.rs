@@ -106,7 +106,6 @@ where
 
 pub fn normalized<VRet, V: VectorLike<N>, const N: usize>(v: V) -> VRet
 where
-    V: VectorLike<N>,
     <V::ElementType as AsFloatingPoint>::Output: VectorElement,
     VRet: FloatVectorLike<N, ElementType = <V::ElementType as AsFloatingPoint>::Output>,
 {
