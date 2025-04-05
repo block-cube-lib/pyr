@@ -474,6 +474,14 @@ impl<T: MatrixElement> Mat<T, 4, 4> {
         m
     }
 
+    pub fn scale(v: impl VectorLike<3, ElementType = T>) -> Self {
+        let mut m = Self::IDENTITY;
+        m.elements[0][0] = *v.get(0);
+        m.elements[1][1] = *v.get(1);
+        m.elements[2][2] = *v.get(2);
+        m
+    }
+
     pub fn rotate_x(redian: T) -> Self
     where
         T: FloatMatrixElement,
@@ -950,6 +958,14 @@ mod test {
 
         let zero = Mat::<f32, 3, 3>::ZERO;
         assert_eq!(zero.inverse(), None);
+    }
+
+    #[test]
+    fn mat4x4_scale() {
+        let m = Mat::<i32, 4, 4>::scale([5, 7, 11]);
+        let v = Vec3::new(2, 3, 5);
+        let p = v * m;
+        assert_eq!(p, Vec3::new(10, 21, 55));
     }
 
     #[test]
