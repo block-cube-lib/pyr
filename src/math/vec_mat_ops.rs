@@ -46,7 +46,7 @@ impl<T: VectorElement> Mul<Mat<T, 4, 4>> for Vec3<T> {
     fn mul(self, rhs: Mat<T, 4, 4>) -> Self::Output {
         let v4 = Vec4::new(self.x, self.y, self.z, T::ONE);
         let v = v4 * rhs;
-        Vec3::new(v.x, v.y, v.z)
+        Vec3::new(v.x / v.w, v.y / v.w, v.z / v.w)
     }
 }
 
@@ -90,7 +90,7 @@ impl<T: VectorElement> Mul<Vec3<T>> for Mat<T, 4, 4> {
     fn mul(self, rhs: Vec3<T>) -> Self::Output {
         let v4 = Vec4::new(rhs.x, rhs.y, rhs.z, T::ONE);
         let v = self * v4;
-        Vec3::new(v.x, v.y, v.z)
+        Vec3::new(v.x / v.w, v.y / v.w, v.z / v.w)
     }
 }
 
