@@ -586,12 +586,13 @@ impl<T: MatrixElement> Mat<T, 4, 4> {
         ])
     }
 
-    pub fn perspective(fov_y: T, aspect: T, near: T, far: T) -> Self
+    pub fn perspective(fov_y_rad: T, aspect: T, near: T, far: T) -> Self
     where
         T: FloatMatrixElement,
         <T as AsFloatingPoint>::Output: FloatVectorElement,
     {
-        let f = fov_y.tan().recip();
+        let two = T::ONE + T::ONE;
+        let f = (fov_y_rad / two).tan().recip();
         let r = far / (far - near);
         Self::new([
             [f / aspect, T::ZERO, T::ZERO, T::ZERO],
@@ -627,14 +628,15 @@ impl<T: MatrixElement> Mat<T, 4, 4> {
     {
         let eye = Vec3::<T>::from_vector(eye);
         let target = Vec3::<T>::from_vector(target);
+        let up = Vec3::<T>::from_vector(up);
         let f = (target - eye).normalized();
-        let r = f.cross(up).normalized();
-        let u = r.cross(f);
+        let r = up.cross(f).normalized();
+        let u = f.cross(r);
         Self::new([
-            [r.x, u.x, -f.x, T::ZERO],
-            [r.y, u.y, -f.y, T::ZERO],
-            [r.z, u.z, -f.z, T::ZERO],
-            [-r.dot(eye), -u.dot(eye), f.dot(eye), T::ONE],
+            [r.x, u.x, f.x, T::ZERO],
+            [r.y, u.y, f.y, T::ZERO],
+            [r.z, u.z, f.z, T::ZERO],
+            [-r.dot(eye), -u.dot(eye), -f.dot(eye), T::ONE],
         ])
     }
 }
