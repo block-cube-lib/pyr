@@ -53,15 +53,15 @@ impl<T: VectorElement> Vec2<T> {
 
 impl<T: FloatVectorElement> Vec2<T> {
     pub fn angle(&self, rhs: Vec2<T>) -> T {
+        let angle = self.unsigned_angle(rhs);
+        let cross = self.cross(rhs);
+        if cross < T::ZERO { -angle } else { angle }
+    }
+
+    pub fn unsigned_angle(&self, rhs: Vec2<T>) -> T {
         let dot = self.dot(rhs);
         let len = self.length() * rhs.length();
         (dot / len).acos()
-    }
-
-    pub fn signed_angle(&self, rhs: Vec2<T>) -> T {
-        let angle = self.angle(rhs);
-        let cross = self.cross(rhs);
-        if cross < T::ZERO { -angle } else { angle }
     }
 
     pub fn reflect(&self, normal: Vec2<T>) -> Self {
