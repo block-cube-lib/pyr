@@ -93,7 +93,7 @@ impl TypeData {
         &self.derive_input.generics
     }
 
-    fn type_generics(&self) -> syn::TypeGenerics {
+    fn type_generics(&self) -> syn::TypeGenerics<'_> {
         self.derive_input.generics.split_for_impl().1
     }
 
