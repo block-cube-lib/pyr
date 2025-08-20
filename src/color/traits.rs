@@ -93,7 +93,12 @@ macro_rules! impl_color_element {
                 }
 
                 fn into_floating_point<T: FloatingPointColorElement>(self) -> T {
-                    T::as_self(self.as_f64() / Self::MAX.as_f64())
+                    if self >= Self::ZERO {
+                        T::as_self(self.as_f64() / Self::MAX.as_f64())
+                    }
+                    else {
+                        -(T::as_self(self.as_f64() / Self::MIN.as_f64()))
+                    }
                 }
 
                 fn as_f64(self) -> f64 {
