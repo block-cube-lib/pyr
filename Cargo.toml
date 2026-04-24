@@ -1,0 +1,13 @@
+[package]
+name = "pyr"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+members = ["crates/*"]
+
+[dependencies]
+pyr-math = { path = "crates/pyr-math" }
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
