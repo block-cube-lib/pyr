@@ -165,7 +165,7 @@ macro_rules! impl_primitive_scalar_vec_mul {
 
 macro_rules! impl_vec_approx {
     ($VecN:ident, $($field:ident),+) => {
-        impl<T> crate::scalar::ApproxEq for $VecN<T>
+        impl<T> crate::ApproxEq for $VecN<T>
         where T: FloatScalar {
             type Epsilon = T;
 
@@ -184,7 +184,7 @@ macro_rules! impl_vec_approx {
 
 macro_rules! impl_vec_float_math {
     ($VecN:ident) => {
-        impl<T: crate::scalar::FloatScalar> $VecN<T> {
+        impl<T: crate::FloatScalar> $VecN<T> {
             #[inline]
             pub fn length(self) -> T {
                 self.length_squared().sqrt()
