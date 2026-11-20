@@ -111,18 +111,6 @@ impl<T: FloatScalar> Lerp for Vec4<T> {
     }
 }
 
-impl<T> std::convert::From<(T, T, T, T)> for Vec4<T> {
-    #[inline]
-    fn from(tuple: (T, T, T, T)) -> Self {
-        Self {
-            x: tuple.0,
-            y: tuple.1,
-            z: tuple.2,
-            w: tuple.3,
-        }
-    }
-}
-
 impl<T> std::convert::From<(crate::vector::Vec2<T>, T, T)> for Vec4<T> {
     #[inline]
     fn from(tuple: (crate::vector::Vec2<T>, T, T)) -> Self {
@@ -151,6 +139,18 @@ impl<T> std::convert::From<[T; 4]> for Vec4<T> {
     #[inline]
     fn from(array: [T; 4]) -> Self {
         Self::from_array(array)
+    }
+}
+
+impl<T> std::convert::From<(T, T, T, T)> for Vec4<T> {
+    #[inline]
+    fn from(tuple: (T, T, T, T)) -> Self {
+        Self {
+            x: tuple.0,
+            y: tuple.1,
+            z: tuple.2,
+            w: tuple.3,
+        }
     }
 }
 

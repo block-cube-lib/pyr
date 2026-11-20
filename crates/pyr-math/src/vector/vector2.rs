@@ -102,6 +102,17 @@ where
 }
 
 impl<T: FloatScalar> Vec2<T> {
+    /// Returns the normalized vector, or `None` if the vector is zero-length.
+    #[inline]
+    pub fn try_normalized(self) -> Option<Self> {
+        let len_sq = self.length_squared();
+        if len_sq.approx_eq(&T::ZERO) {
+            None
+        } else {
+            Some(self / len_sq.sqrt())
+        }
+    }
+
     /// Returns the angle between two vectors in radians, in the range [0, π].
     #[inline]
     pub fn angle_between(self, other: Self) -> T {

@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 num-traits = "0.2.19"
 serde = { workspace = true, optional = true }
+thiserror = { workspace = true }
 
 [features]
 serde = ["dep:serde"]

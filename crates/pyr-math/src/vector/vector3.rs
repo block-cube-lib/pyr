@@ -95,6 +95,17 @@ impl<T: Scalar> Vec3<T> {
 }
 
 impl<T: FloatScalar> Vec3<T> {
+    /// Returns the normalized vector, or `None` if the vector is zero-length.
+    #[inline]
+    pub fn try_normalized(self) -> Option<Self> {
+        let len_sq = self.length_squared();
+        if len_sq.approx_eq(&T::ZERO) {
+            None
+        } else {
+            Some(self / len_sq.sqrt())
+        }
+    }
+
     #[inline]
     pub fn angle_between(self, other: Self) -> T {
         let dot = self.dot(other);
